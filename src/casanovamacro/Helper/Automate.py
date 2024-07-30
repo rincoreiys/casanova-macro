@@ -10,8 +10,10 @@ from .Socket import emit, socket
 # run_screenshot_thread()
 
 class Automate:
+   
     def login(self):
         print("loging in")
+        timeout = 120
         def handle_charlock_box():
             try:
                 if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
@@ -19,9 +21,9 @@ class Automate:
                     if win32gui.IsIconic(config.flash_hwnd):
                         win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
                     # Bring the window to the foregrounds
-                    sleep(0.1)
+                    sleep(0.05)
                     win32gui.SetForegroundWindow(config.flash_hwnd)
-                    sleep(0.5)
+                    sleep(0.05)
                     click(577, 539, 2)
                     pyautogui.press("backspace")
                     sleep(0.2)
@@ -32,7 +34,7 @@ class Automate:
             except:
                 handle_charlock_box()
         x, y = [round(173 + (333 * config.character.character_index  - (333 / 2))), 560]
-        timeout = 120
+       
         step = 2
         if check_image_existance(ONLINE_STATE_RECOGNITION_LOCATION) is False:
             while True:
