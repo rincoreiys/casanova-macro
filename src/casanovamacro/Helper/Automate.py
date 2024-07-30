@@ -18,8 +18,7 @@ class Automate:
             try:
                 if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
                         # If the window is minimized, restore it
-                    if win32gui.IsIconic(config.flash_hwnd):
-                        win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
+                    win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
                     # Bring the window to the foregrounds
                     sleep(0.05)
                     win32gui.SetForegroundWindow(config.flash_hwnd)
