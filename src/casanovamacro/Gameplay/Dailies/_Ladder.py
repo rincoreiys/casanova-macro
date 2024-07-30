@@ -23,17 +23,18 @@ class Ladder(Daily):
 
             #CLAIM UNCLAIMED REWARD
             if(click_on_image([self.image_path('collect'), NPC_CHOICES_REGION])):
+                sleep(1)
                 return self.enter_instance() #DO RECURSIVE
             
             set_mounting(False)
             time.sleep(0.2)
             click_on_image([self.image_path(config.character.ladder_checkpoint), NPC_CHOICES_REGION])
-            time.sleep(0.2)
+            time.sleep(1)
 
             #CHECK ATTEMPT
             if check_image_existance([self.image_path("zero_attempt"), NPC_CHOICES_REGION]) == False:
                 click_npc_option()
-                if wait_map(self.image_path("instance")): 
+                if wait_map(self.image_path(f"instance{config.character.ladder_checkpoint}")): 
                     self.is_inside = True
             else:
                 click_npc_option(3)
