@@ -14,42 +14,42 @@ class Automate:
     def login(self):
         print("loging in")
         timeout = 120
-        def handle_charlock_box():
-            try:
-                if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
-                        # If the window is minimized, restore it
-                   
-                    # if win32gui.IsIconic(config.flash_hwnd):
-                    #     win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
-                    # # Bring the window to the foregrounds
-                    # win32gui.SetForegroundWindow(config.flash_hwnd)
-
-                    if win32gui.IsIconic(config.flash_wrapper_hwnd):
-                        win32gui.ShowWindow(config.flash_wrapper_hwnd, win32con.SW_RESTORE)
-                    # Bring th window to the foregrounds
-                    win32gui.SetForegroundWindow(config.flash_hwnd)
-
-                    sleep(0.05)
-                    click(577, 539, 2)
-                    pyautogui.press("backspace")
-                    sleep(0.2)
-                    pyautogui.write("0702")
-                    sleep(1)
-                    # win32gui.SetWindowPos(config.workspace_hwnd, win32con.HWND_BOTTOM, 0, 0, 0, 0,  win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE)
-                    click(613, 573) #CLICK CONFIRM
-            except:
-                handle_charlock_box()
+ 
         x, y = [round(173 + (333 * config.character.character_index  - (333 / 2))), 560]
-       
-        step = 2
+        step = 1
         if check_image_existance(ONLINE_STATE_RECOGNITION_LOCATION) is False:
             while True:
                 timeout -= step
-                click(x , y, 3)
-                print("x, y", x ,y)
-                sleep(1)
+                try:
+                    if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
+                            # If the window is minimized, restore it
+                    
+                        # if win32gui.IsIconic(config.flash_hwnd):
+                        #     win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
+                        # # Bring the window to the foregrounds
+                        # win32gui.SetForegroundWindow(config.flash_hwnd)
 
-                handle_charlock_box()
+                        if win32gui.IsIconic(config.flash_wrapper_hwnd):
+                            win32gui.ShowWindow(config.flash_wrapper_hwnd, win32con.SW_RESTORE)
+                        # Bring th window to the foregrounds
+                        win32gui.SetForegroundWindow(config.flash_hwnd)
+
+                        sleep(0.05)
+                        click(577, 539, 2)
+                        pyautogui.press("backspace")
+                        sleep(0.2)
+                        pyautogui.write("0702")
+                        sleep(1)
+                        # win32gui.SetWindowPos(config.workspace_hwnd, win32con.HWND_BOTTOM, 0, 0, 0, 0,  win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE)
+                        click(613, 573) #CLICK CONFIRM
+                    else:
+                        click(x , y, 3)
+                        print("x, y", x ,y)
+                        sleep(1)
+
+                except Exception as ex: 
+                    print("charlock box err", ex)
+
 
                 if timeout <= 0: 
                     print(f"LOGIN FAILED")
@@ -64,7 +64,7 @@ class Automate:
                     return False
             
             sleep(10) #IMPORTANT TO WAIT FLASH WINDOW IDLE
-            emit("character_online", config.character.name)
+            emit("character_online")
             return  True
         else: 
             print(f"{config.character.name} ALREADY LOGGED IN ")
