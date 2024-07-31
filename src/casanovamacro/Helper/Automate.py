@@ -18,12 +18,17 @@ class Automate:
             try:
                 if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
                         # If the window is minimized, restore it
-                    win32gui.SetActiveWindow(config.flash_hwnd)
-                    win32gui.SetForegroundWindow(config.flash_hwnd)
-                    
+                   
                     # if win32gui.IsIconic(config.flash_hwnd):
                     #     win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
-                    # Bring the window to the foregrounds
+                    # # Bring the window to the foregrounds
+                    # win32gui.SetForegroundWindow(config.flash_hwnd)
+
+                    if win32gui.IsIconic(config.flash_wrapper_hwnd):
+                        win32gui.ShowWindow(config.flash_wrapper_hwnd, win32con.SW_RESTORE)
+                    # Bring th window to the foregrounds
+                    win32gui.SetForegroundWindow(config.flash_hwnd)
+
                     sleep(0.05)
                     click(577, 539, 2)
                     pyautogui.press("backspace")
@@ -48,14 +53,14 @@ class Automate:
 
                 if timeout <= 0: 
                     print(f"LOGIN FAILED")
-                    emit("character_login_timeout", config.character.name )
+                    emit("character_login_timeout")
                     return False
                 sleep(step)
-                emit("character_loading", config.character.name )
+                emit("character_loading")
                 if check_image_existance(ONLINE_STATE_RECOGNITION_LOCATION): break
                 if check_image_existance(CHARACTER_CONFLICT_RECOGNITION):
                     print("Character Conflict")
-                    emit("character_conflict", config.character.name)
+                    emit("character_conflict")
                     return False
             
             sleep(10) #IMPORTANT TO WAIT FLASH WINDOW IDLE

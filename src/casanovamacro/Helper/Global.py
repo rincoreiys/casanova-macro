@@ -6,6 +6,7 @@ from .Types import *
 
 class Config:
     flash_hwnd:int
+    flash_wrapper_hwnd:int
     flash:None
     character:Character
     character_name:str
@@ -27,12 +28,14 @@ class Config:
             parser.add_argument("-whwnd", "--workspace_hwnd", help="Workspace HWND")
             parser.add_argument("-wmode", "--workspace_mode", help="Workspace Mode")
             parser.add_argument("-fhwnd", "--flash_hwnd", help="Flash HWND")
+            parser.add_argument("-fwhwnd", "--flash_wrapper_hwnd", help="Flash Wrapper HWND")
             parser.add_argument("-cname", "--character_name", help="Character Name")
             
             args = parser.parse_args()
             print(args)
             self.character_name = args.character_name
             self.flash_hwnd = int(args.flash_hwnd)
+            self.flash_wrapper_hwnd = int(args.flash_wrapper_hwnd)
             self.workspace_hwnd = int(args.workspace_hwnd)
             self.workspace_mode = args.workspace_mode
             response_attr = ",".join(Character.__annotations__.keys())
