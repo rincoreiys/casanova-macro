@@ -12,6 +12,16 @@ from .Socket import emit, socket
 class Automate:
    
     def login(self):
+
+        def enum_child_windows(parent_hwnd):
+            child_windows = []
+
+            def callback(hwnd, lParam):
+                child_windows.append(hwnd)
+                return True
+
+            win32gui.EnumChildWindows(parent_hwnd, callback, None)
+            return child_windows
         print("loging in")
         timeout = 120
  
@@ -22,24 +32,16 @@ class Automate:
                 timeout -= step
                 try:
                     if check_image_existance(["dialog/charlock_dialog", (536, 438, 130,54)]):
-                            # If the window is minimized, restore it
-                    
-                        # if win32gui.IsIconic(config.flash_hwnd):
-                        #     win32gui.ShowWindow(config.flash_hwnd, win32con.SW_RESTORE)
-                        # # Bring the window to the foregrounds
-                        # win32gui.SetForegroundWindow(config.flash_hwnd)
-
-                        if win32gui.IsIconic(config.flash_wrapper_hwnd):
-                            win32gui.ShowWindow(config.flash_wrapper_hwnd, win32con.SW_RESTORE)
-                        # Bring th window to the foregrounds
-                        win32gui.SetForegroundWindow(config.flash_wrapper_hwnd)
-
-                        sleep(0.05)
                         click(577, 539, 2)
-                        pyautogui.press("backspace")
-                        sleep(0.2)
-                        pyautogui.write("0702")
-                        sleep(1)
+                        win32api.PostMessage(config.flash_hwnd, win32con.WM_CHAR, ord("0"), 0)
+                        sleep(0.1)
+                        win32api.PostMessage(config.flash_hwnd, win32con.WM_CHAR, ord("7"), 0)
+                        sleep(0.1)
+                        win32api.PostMessage(config.flash_hwnd, win32con.WM_CHAR, ord("0"), 0)
+                        sleep(0.1)
+                        win32api.PostMessage(config.flash_hwnd, win32con.WM_CHAR, ord("2"), 0)
+                        sleep(0.1)
+                        
                         # win32gui.SetWindowPos(config.workspace_hwnd, win32con.HWND_BOTTOM, 0, 0, 0, 0,  win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE)
                         click(613, 573) #CLICK CONFIRM
                     else:
