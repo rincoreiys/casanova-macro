@@ -32,7 +32,7 @@ class Automate:
                         if win32gui.IsIconic(config.flash_wrapper_hwnd):
                             win32gui.ShowWindow(config.flash_wrapper_hwnd, win32con.SW_RESTORE)
                         # Bring th window to the foregrounds
-                        win32gui.SetForegroundWindow(config.flash_hwnd)
+                        win32gui.SetForegroundWindow(config.flash_wrapper_hwnd)
 
                         sleep(0.05)
                         click(577, 539, 2)
