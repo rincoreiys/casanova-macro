@@ -198,7 +198,7 @@ def repair_equip():
 def drop_junk(quick_clean=False):
     #print(quick_clean, "qc")
     
-    path_of_the_directory= asset_path("Quick Junk" if quick_clean else "Junk")
+    path_of_the_directory= asset_path("Junk")
     files = list(filter(lambda filename : os.path.isfile(os.path.join(path_of_the_directory,filename)) ,  os.listdir(path_of_the_directory)))
     print(files)
     click_confirm()   #CLICK UNCLOSED CONFIRM DIALOG
