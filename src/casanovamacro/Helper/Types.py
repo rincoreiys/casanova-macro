@@ -14,7 +14,7 @@ class Character:
     routines:list[str]
     done:list[str]
     ladder_checkpoint:int
-    name:str
+    nickname:str
     faction_shortcut_unlocked:bool
     character_index: int
     needs:list[str]

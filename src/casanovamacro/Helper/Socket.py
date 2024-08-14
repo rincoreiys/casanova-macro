@@ -24,7 +24,7 @@ class Socket:
            
 
     def connect(self) -> None:
-        self.sio.connect(f"{SERVER_ADDRESS}?workspace_mode={config.workspace_mode}&workspace_hwnd={config.workspace_hwnd}&character_name={config.character.name}", namespaces=[self.namespace])
+        self.sio.connect(f"{SERVER_ADDRESS}?workspace_mode={config.workspace_mode}&workspace_hwnd={config.workspace_hwnd}&nickname={config.character.nickname}", namespaces=[self.namespace])
         Thread(target=self.sio.wait, daemon=True).start()
 
     def emit(self, event, data=None):

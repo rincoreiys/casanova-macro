@@ -10,7 +10,6 @@ from .Socket import emit, socket
 # run_screenshot_thread()
 
 class Automate:
-   
     def login(self):
 
         def enum_child_windows(parent_hwnd):
@@ -69,7 +68,7 @@ class Automate:
             emit("character_online")
             return  True
         else: 
-            print(f"{config.character.name} ALREADY LOGGED IN ")
+            print(f"{config.character.nickname} ALREADY LOGGED IN ")
             return True
 
     def proc(self, previous_class=None):
@@ -118,7 +117,7 @@ class Automate:
             emit("character_done")
             sleep(3) #IMPORTANT TO WAIT TILL ALL SOCKET EVENT EMITTED
         except ActivityTimeoutException:
-            emit("character_stuck_on_activity", config.character.name)
+            emit("character_stuck_on_activity", config.character.nickname)
 
     def cleaning(self):
         # EXTRA CLEAN EVERY 7 DAY
@@ -150,7 +149,7 @@ class Automate:
                 walk_to_map_coordinate(719,648, acknowledge=True, timeout=20)
                 change_line()
 
-            print(f"{config.character.name} HAS LOGGED IN ")
+            print(f"{config.character.nickname} HAS LOGGED IN ")
             print("Character Routines: ", config.character.routines)
             self.proc()
             
