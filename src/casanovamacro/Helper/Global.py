@@ -1,4 +1,5 @@
 import argparse
+from time import sleep
 import win32ui
 import requests
 from casanovamacro.Helper.Macro.Const import SERVER_ADDRESS
@@ -33,6 +34,7 @@ class Config:
             
             args = parser.parse_args()
             print(args)
+            sleep(5)
             self.nickname = args.nickname
             self.flash_hwnd = int(args.flash_hwnd)
             # self.flash_wrapper_hwnd = int(args.flash_wrapper_hwnd)
