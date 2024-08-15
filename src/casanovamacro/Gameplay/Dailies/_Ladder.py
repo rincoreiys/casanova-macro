@@ -67,7 +67,7 @@ class Ladder(Daily):
             if is_in_map(self.image_path(("entrance"))) :
                 self.enter_instance()
           
-            elif is_in_map(self.image_path("instance")):  
+            elif is_in_map(self.image_path(f"instance{config.character.ladder_checkpoint}")):  
                 print("#2")
                 self.is_inside = True
             
