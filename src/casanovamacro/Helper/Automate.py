@@ -11,16 +11,6 @@ from .Socket import emit, socket
 
 class Automate:
     def login(self):
-
-        def enum_child_windows(parent_hwnd):
-            child_windows = []
-
-            def callback(hwnd, lParam):
-                child_windows.append(hwnd)
-                return True
-
-            win32gui.EnumChildWindows(parent_hwnd, callback, None)
-            return child_windows
         print("loging in")
         timeout = 120
  

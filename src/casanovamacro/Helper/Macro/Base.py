@@ -1,5 +1,6 @@
 
 import ctypes
+from threading import Thread
 import pyautogui, time, os, win32api, win32gui, win32con, win32ui
 from ctypes import windll, wintypes
 from time import sleep
@@ -88,7 +89,7 @@ def screenshot(show=False): #UPDATED
 
         # win32gui.ShowWindow(hwnd, win32con.SW_SHOW)
         sleep(0.3)
-        result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
+        result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 0)
         
         bmpinfo = saveBitMap.GetInfo()
         bmpstr = saveBitMap.GetBitmapBits(True)
@@ -112,8 +113,10 @@ def screenshot(show=False): #UPDATED
         # # if SCREENSHOT_STATE: minimize_flash()
         # # return SCREENSHOT_IMAGE
         if show: 
-            Thread(target=im.show).start()
+            im.show()
             sleep(1)
+            config.screenshot_state = False
+            exit(0)
             
         
             # image.save(os.path.join(*casanovamacro.__path__, "Temp", f"{config.flash_hwnd}{time.time()}.png") )

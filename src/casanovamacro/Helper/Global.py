@@ -8,7 +8,7 @@ from .Types import *
 class Config:
     flash_hwnd:int
     flash_wrapper_hwnd:int
-    flash:None
+    flash:object =  None
     character:Character
     nickname:str
     active_routine:str
@@ -29,15 +29,14 @@ class Config:
             parser.add_argument("-whwnd", "--workspace_hwnd", help="Workspace HWND")
             parser.add_argument("-wmode", "--workspace_mode", help="Workspace Mode")
             parser.add_argument("-fhwnd", "--flash_hwnd", help="Flash HWND")
-            # parser.add_argument("-fwhwnd", "--flash_wrapper_hwnd", help="Flash Wrapper HWND")
+            parser.add_argument("-fwhwnd", "--flash_wrapper_hwnd", help="Flash Wrapper HWND")
             parser.add_argument("-nickname", "--nickname", help="Character Name")
             
             args = parser.parse_args()
             print(args)
-            sleep(5)
             self.nickname = args.nickname
             self.flash_hwnd = int(args.flash_hwnd)
-            # self.flash_wrapper_hwnd = int(args.flash_wrapper_hwnd)
+            self.flash_wrapper_hwnd = int(args.flash_wrapper_hwnd)
             self.workspace_hwnd = int(args.workspace_hwnd)
             self.workspace_mode = args.workspace_mode
             response_attr = ",".join(Character.__annotations__.keys())
@@ -55,12 +54,12 @@ class Config:
                 self.character.workspace_mode = self.workspace_mode
                 self.character.flash_hwnd = self.flash_hwnd
                 print("cdfsd",  self.character)
-                try:
-                    self.flash = win32ui.CreateWindowFromHandle(self.flash_hwnd)
-                    
-                except Exception as flash_window_ex:
-                    print("Arg error:", flash_window_ex)
-                    exit(2)
+                print("flash", self.flash)
+                while self.flash is None and self.flash_hwnd != 0:
+                    try:
+                        self.flash = win32ui.CreateWindowFromHandle(self.flash_hwnd)
+                    except Exception as flash_window_ex:
+                        print("Arg error:", flash_window_ex)
             else:
                 print("Failed to get account info")
                 exit(3)
