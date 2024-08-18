@@ -78,6 +78,10 @@ class Dungeon(Activity):
                             #CLICK CONFIRM
                             click(674, 516)
                             self.is_dk_empty = True
+                            emit("update_character_fields", {
+                                "need_dk": self.is_dk_empty
+                            })
+
                             return False
                     else:
                         #WAIT UNTIL ENTER DUNGEON

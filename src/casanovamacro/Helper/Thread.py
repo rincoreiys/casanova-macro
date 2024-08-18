@@ -17,6 +17,8 @@ def screenshot_thread():
             break
     print("SS THREAD HAS  STOP")
 
+
+
 def run_screenshot_thread():
     from .Global import config
     config.screenshot_state = True

@@ -148,7 +148,7 @@ def set_frost(state=True): #UPDATED
 
 #UPDATED 20/5/24 WORKING ALPHA
 def set_map_display(state = True): #UPDATED    
-    if check_image_existance(MAP_WINDOW_LOCATION) is not state:
+    if check_image_existance(MAP_WINDOW_LOCATION) is not state and check_map_blank() == False: #DONT SPAM OPEN MAP IF MAP LOADER STILL RUNNING
         print("map opened")
         press("M")
         # time.sleep(0.5)
@@ -157,7 +157,7 @@ def set_map_display(state = True): #UPDATED
     return check_image_existance(MAP_WINDOW_LOCATION) == state
    
 #UPDATED 20/5/24 WORKING ALPHA
-def walk_to_map_coordinate(x=0,y=0, acknowledge=False, allow_afk=False, sequence=None, timeout=5): #UPDATED
+def walk_to_map_coordinate(x=0,y=0, acknowledge=False, allow_afk=False, sequence=None, timeout=5, let_dialog_opened = False): #UPDATED
     CHARACTER_POINTER_ON_MAP_LOCATION  = ["common/character_on_map", (x-15, y-15, 30, 30)]
     result = False
     if allow_afk == False: 
@@ -185,13 +185,13 @@ def walk_to_map_coordinate(x=0,y=0, acknowledge=False, allow_afk=False, sequence
         print("walk_to_map_coordinate", result)
         time.sleep(0.2)
 
-    set_map_display(False)
+    set_map_display(let_dialog_opened)
         
     return result   
 
-def walk_to_map_by_link(image_link_location, map_destination_location, sequence=[], acknowledge=False, timeout=5):
+def walk_to_map_by_link(destinaton_map_link, map_destination, sequence=[], acknowledge=False, timeout=5):
     #SEQUENCE USEFULL TO HANDLE STUCK ON PORTAL
-    while not is_in_map(map_destination_location):
+    while not is_in_map(map_destination):
         if set_map_display():
             for x, y in sequence:
                 CHARACTER_POINTER_ON_MAP_LOCATION  = ["common/character_on_map", (x-15, y-15, 30, 30)]
@@ -200,10 +200,15 @@ def walk_to_map_by_link(image_link_location, map_destination_location, sequence=
                         click(x, y)
                         sleep(0.5)
                         timeout -= .5
+                else:
+                    click(x, y)
+                    sleep(1)
+
             
                 timeout = 5
-            click_on_image(image_link_location)
-            if is_in_map(map_destination_location): pass
+            click_on_image([destinaton_map_link, MAP_LINK_REGION])
+            if is_in_map(map_destination): pass
+        
 
 #UPDATED 20/5/24 WORKING ALPHA
 def scroll_npc_list_on_map(index=0):

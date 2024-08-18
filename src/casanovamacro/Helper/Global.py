@@ -20,6 +20,8 @@ class Config:
     # TURN OFF THE CHARACTER AND RESTART THE PROCESS FROM START
     
 
+    #PROGRAM SETTING
+    only_screenshot:bool = False
     #WEEKLY EVENTS
     torch_event:bool = False
 
@@ -31,9 +33,19 @@ class Config:
             parser.add_argument("-fhwnd", "--flash_hwnd", help="Flash HWND")
             parser.add_argument("-fwhwnd", "--flash_wrapper_hwnd", help="Flash Wrapper HWND")
             parser.add_argument("-nickname", "--nickname", help="Character Name")
+            parser.add_argument("-screenshot", action="store_true")
             
             args = parser.parse_args()
-            print(args)
+            print("args:", args)
+            
+            try:
+                if args.screenshot == True: 
+                    self.only_screenshot = True
+                    self.character = Character()
+
+            except Exception: pass
+
+
             self.nickname = args.nickname
             self.flash_hwnd = int(args.flash_hwnd)
             self.flash_wrapper_hwnd = int(args.flash_wrapper_hwnd)
@@ -41,28 +53,33 @@ class Config:
             self.workspace_mode = args.workspace_mode
             response_attr = ",".join(Character.__annotations__.keys())
 
-            
-            response = requests.get(f"{SERVER_ADDRESS}/character/{self.nickname}?only={response_attr}")
-            print(response.json())
-            if response.status_code == 200: 
-                json_data = response.json()["data"]
-                print("jdd", json_data)
-                # self.character = Character
-                self.character = Character(**json_data)
+            for x in range(2): #MAKE SURE FLASH HANDLE ATTACHED
+                try:
+                    self.flash = win32ui.CreateWindowFromHandle(self.flash_hwnd)
+                    
+                    break
+                except Exception as flash_window_ex:
+                    print("Arg error:", flash_window_ex)
+
+
+            if self.only_screenshot == False : 
+                response = requests.get(f"{SERVER_ADDRESS}/character/{self.nickname}?only={response_attr}")
+                print(response.json())
+                if response.status_code == 200: 
+                    json_data = response.json()["data"]
+                    print("jdd", json_data)
+                    # self.character = Character
+                    self.character = Character(**json_data)
+                    
+                    #OVERWRITE OLD ONLINE DESCRIPTION
+                    self.character.workspace_mode = self.workspace_mode
+                    self.character.flash_hwnd = self.flash_hwnd
+                    print("cdfsd",  self.character)
+                    print("flash", self.flash)
                 
-                #OVERWRITE OLD ONLINE DESCRIPTION
-                self.character.workspace_mode = self.workspace_mode
-                self.character.flash_hwnd = self.flash_hwnd
-                print("cdfsd",  self.character)
-                print("flash", self.flash)
-                while self.flash is None and self.flash_hwnd != 0:
-                    try:
-                        self.flash = win32ui.CreateWindowFromHandle(self.flash_hwnd)
-                    except Exception as flash_window_ex:
-                        print("Arg error:", flash_window_ex)
-            else:
-                print("Failed to get account info")
-                exit(3)
+                else:
+                    print("Failed to get account info")
+                    exit(3)
             
         except Exception as args_ex:
             print("Arg error: check again argument you passed in",args_ex)

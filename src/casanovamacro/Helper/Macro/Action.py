@@ -1,4 +1,5 @@
 ## MORE COMPLEX GAME FUNCTION 
+from ..Socket import emit
 from ...Helper.Macro.Game import * 
 from ...Helper.Global import * 
 
@@ -65,17 +66,21 @@ def synthesis_aterfact():
     return True
         
 def check_has_money():
-    pass
-    # return check_image_existance()
+    has_money = check_image_existance(["state/no_platinum", (627, 671, 51,15)]) == False
+    emit("update_character_fields", {
+        "need_gold": has_money == False
+    })
+
+    return has_money
     
 
-def synthesis_gems():
+def synthesis_gems(timeout = -1 ): #-1 FOR NOT SET TIME UP
     GEMS_CATEGORY_OPTION = ["options/gems_category", (559,267,252,308)]#-
     GEMS_CATEGORY_SELECTED = ["options/gems_category_selected", (559,246,227,24)] #-
     FOCUSED_GEMS_CATEGORY_OPTION = ["options/gems_category_focused", (557,546,99,26)] #-
     GEMS_INDEX = ["ruby", "topaz", "amber", "saphire", "jade", "emerald"]
     GEMS_GRADE_POSITION = [(545,310),(685,310), (545,350), (685, 350)] #FLAWED, SCRATCHED, NORMAL, SHINING
-    
+
     def select_gems_category():
         while check_image_existance(GEMS_CATEGORY_SELECTED) == False: 
             click(685, 260)
@@ -86,11 +91,9 @@ def synthesis_gems():
 
             click_on_image(GEMS_CATEGORY_OPTION)
             
-            
-
     def select_gems_subcategory(subcategory_index=0):
-        while check_image_existance([f"state/gems/selected_sub_{GEMS_INDEX[subcategory_index]}", (557, 269, 256,22)]) == False:
-            if is_synth_window_opened()  :
+        while check_image_existance([f"state/gems/selected_sub_{GEMS_INDEX[subcategory_index]}", (557, 269, 256,22)]) == False :
+            if is_synth_window_opened() and check_image_existance(GEMS_CATEGORY_SELECTED)  :
                 click(600, 280)
                 sleep(0.3)
                 click(600, 320 + (20*subcategory_index))
@@ -99,13 +102,13 @@ def synthesis_gems():
                 return False
         return True
 
-    def synth_gems_proc():
+    def synth_gems_proc(timeup):
         pc_empty = False
+
         for i in range(2): #DOUBLE CHECK
             for gems_index in range(len(GEMS_INDEX) ):
-                if select_gems_subcategory(gems_index) == False:  return False #HANDLE IF SOMETHING WRONG HAPPENED, EG WINDOW MOVED OR CLOSED
+                if select_gems_subcategory(gems_index) == False :  return False #HANDLE IF SOMETHING WRONG HAPPENED, EG WINDOW MOVED OR CLOSED
                 for grade in range(len(GEMS_GRADE_POSITION)):
-                    print("grade is ", grade)
                     if  pc_empty and grade == 3: continue #SKIP SYNTH SHINING GEMS  IF PC EMPTY
                     
                     if is_synth_window_opened() == False: return False
@@ -123,32 +126,43 @@ def synthesis_gems():
                         check_image_existance([f"state/gems/empty_{GEMS_INDEX[gems_index]}", (536,440, 287, 45)]) == False
                         and check_image_existance(["state/gems/empty_pc",  (536,440, 287, 45)]) == False 
                         and is_synth_window_opened()
+                        and timeup > 0
                         ):  #HANDLE IF SOMETHING WRONG HAPPENED, EG WINDOW MOVED OR CLOSED
                         # if grade == 3:
-                       
+                        print("grade is ", grade)
                         print("pc empty: ", pc_empty, " grade: ", grade )
+                        print("timeup", timeup )
                         click(*COUNTER_UP_BUTTON_LOCATION, clicks=2)
                         sleep(1)
+                       
+                        if timeup > 0: timeup -=  1
+                    if timeup == 0: raise Exception("GEM TIME UP")
 
+                        
         return True
-
-    while True:
-        if is_synth_window_opened():
-            select_gems_category()
-            if synth_gems_proc(): return True
-        else:
-            if is_bag_settled():
-                if check_has_money() == False: return False
-                else:
-                    open_synth_window()
+    
+    try:
+        while True:
+            if is_synth_window_opened():
+                select_gems_category()
+                if synth_gems_proc(timeout): return True
             else:
-                press("B")
-                sleep(1)
-                if is_bag_settled(): continue
+                if is_bag_settled():
+                    if check_has_money() == False: 
+                        print("CHARACTER NEEDS MORE THAN 1 PLATINUM TO DO THIS")
+                        
+                        return False
+                    else:
+                        open_synth_window()
                 else:
                     press("B")
-                    settling_bag_position()
-
+                    sleep(1)
+                    if is_bag_settled(): continue
+                    else:
+                        press("B")
+                        settling_bag_position()
+    except Exception:
+        print("SYNTH GEMS TIMEOUT")
    
 #UPDATED 30/5/24 
 def read_empty_space( sorted=False): #UPDATED
@@ -235,13 +249,14 @@ def drop_junk(quick_clean=False):
 
         print("JUNK COORDINATES", junk_coordinates)
  
-def check_last_page_slots(loot_focus):
+def check_last_page_slots(need_sort = True):
     if is_bag_settled():
-        click(*BAG_SORT_BUTTON_LOCATION) #CLICK SORT BUTTON
-        sleep(3)
+        if  need_sort: 
+            click(*BAG_SORT_BUTTON_LOCATION) #CLICK SORT BUTTON
+            sleep(3)
         click(*BAG_PAGE_NUMBER_LOCATION[0], clicks=2) #CLICK LAST PAGE ON BAGPACK
         sleep(1)
-        return read_empty_space(loot_focus)
+        return read_empty_space(True)
     else:
         print("PAGE UNEXPECTEDLY CLOSED")
         return 0
@@ -325,12 +340,12 @@ def selling_proc(brief_selling=False):
 
 
  #UPDATED 20/5/24 WORKING ALPHA
-def selling_equip():   
+def selling_equip(need_synth_artefact=True):   
     extract_artefact_result = False     
     while True:  #REPEAT THE PROCCESS UNTIL SELLING DONE
         if still_talking_with_vendor() and is_bag_settled():
             selling_proc(True)
-            if not extract_artefact_result:
+            if not extract_artefact_result and need_synth_artefact:
                 extract_artefact_result = synthesis_aterfact()
             time.sleep(0.5)
             if not selling_proc(): selling_equip() #IF PROCESS WHEN SELLING IS INTRUPTED OR DIALOG CLOSE UNINTENTIONALLY, RUN THE PROCESS FROM THE START

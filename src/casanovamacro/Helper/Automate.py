@@ -112,7 +112,7 @@ class Automate:
     def cleaning(self):
         # EXTRA CLEAN EVERY 7 DAY
         if config.character.focus == "item":
-            synthesis_gems()
+            synthesis_gems(900) # SET 15 MIN SYNTH TIMEUP
         # day = datetime.now().day
         # if config.character.focus == "item" : 
         #     if day % 10 == 0: clean_bag()  #CLEAN ALL JUNK EVERY 10 DAY
