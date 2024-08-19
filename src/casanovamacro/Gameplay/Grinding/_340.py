@@ -1,9 +1,6 @@
 from dataclasses import dataclass
-
 from ...Helper.Macro import *
-
 from .GrindingBlueprint import GrindGold
-
 
 @dataclass
 class G340(GrindGold):

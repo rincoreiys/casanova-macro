@@ -13,6 +13,7 @@ class GrindGold(Activity):
     transit_maps = []
     category:str = "Grind Gold"
     bag_already_empty_before:bool = False
+    loot_focus:str= "equip"
     
     #GRINDING FLOW
     def teleport(self):  
@@ -75,15 +76,19 @@ class GrindGold(Activity):
             else:
                 if  walk_to_map_coordinate(*self.afk_coordinate, acknowledge=True):
                     set_afk()
+                    sleep(10)
+                    set_afk() #DOUBLE CHECK
                     close_all_dialog()
                     sleep(0.2)
                     if is_bag_settled() == False and self.backpack_settling_attempt >= 3: press("B") #MONITOR BAG
                     sleep(1)
                     check_last_page_slots(False) 
                     for x in range(3): #HANDLE IMAGE MISSMATCHING RECOGNITION
+                        self.bag_already_empty_before = read_empty_space(True) >  0 #DOUBLE CHECK
                         while self.bag_already_empty_before:
                             self.bag_already_empty_before = read_empty_space(True) >  0
                             sleep(0.5)
+                    set_afk(False)
                     go_to_city_by_shortcut()
                             
         elif  is_in_map(MAIN_CITY) : 

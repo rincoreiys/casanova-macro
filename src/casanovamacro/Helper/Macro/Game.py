@@ -202,7 +202,7 @@ def walk_to_map_by_link(destinaton_map_link, map_destination, sequence=[], ackno
                         timeout -= .5
                 else:
                     click(x, y)
-                    sleep(1)
+                    sleep(2)
 
             
                 timeout = 5
