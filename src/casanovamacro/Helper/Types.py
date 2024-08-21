@@ -18,7 +18,5 @@ class Character:
     faction_shortcut_unlocked:bool = False
     exclude_junk:list[str] = dataclasses.field(default_factory=list)
     character_index:int = 0
-    need_claim_daily:bool
-    need_claim_bounty:bool
 
 

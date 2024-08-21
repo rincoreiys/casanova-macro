@@ -1,7 +1,9 @@
 import datetime, importlib
 
-from casanovamacro.Gameplay.Dungeons.DungeonBlueprint import Dungeon
-from casanovamacro.Helper.ErrorHandler import ActivityTimeoutException
+from ..Gameplay.Dailies import ClaimBounty
+from ..Gameplay.Dailies import ClaimDailyBonus
+from ..Gameplay.Dungeons.DungeonBlueprint import Dungeon
+from ..Helper.ErrorHandler import ActivityTimeoutException
 from ..Gameplay.Template import Activity
 from .Macro import *
 from .Global import config
@@ -67,6 +69,8 @@ class Automate:
         module = importlib.import_module("casanovamacro")
         undone = [routine for routine in config.character.routines if routine not in   config.character.done ]
         try:
+          
+            
             for routine in undone:
                 class_ = getattr(module, routine)
                 instance:Activity | Dungeon = class_()
