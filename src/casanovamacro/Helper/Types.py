@@ -8,7 +8,7 @@ class Character:
     corruption_limit:int = 0
     dungeon_loot_quality:int = 0
     corruption_loot_quality:int = 0
-    need_corruption_loot:bool
+    need_corruption_loot:bool = True
     need_corruption_mob_attempt:bool
     focus:str = 'item'
     routines:list[str] = dataclasses.field(default_factory=list)
