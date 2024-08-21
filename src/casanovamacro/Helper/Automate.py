@@ -54,7 +54,7 @@ class Automate:
                     emit("character_conflict")
                     return False
             
-            sleep(10) #IMPORTANT TO WAIT FLASH WINDOW IDLE
+            sleep(5) #IMPORTANT TO WAIT FLASH WINDOW IDLE
             emit("character_online")
             return  True
         else: 

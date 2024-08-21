@@ -140,7 +140,7 @@ class Corruption(Activity):
 
         if check_image_existance([self.image_path("corrupted_guard_dialog") ,NPC_DIALOG_REGION]):
             is_free_attempt_done = check_image_existance([self.image_path("free_attempt_done"), (620, 428, 126 ,32)])
-            is_mob_attempt_done = check_image_existance([self.image_path("mob_attempt_done"), (698,458,110,28)])
+            is_mob_attempt_done = check_image_existance([self.image_path("mob_attempt_done"), (698,458,110,28)]) or config.character.need_corruption_mob_attempt == False
             #CLOSE UNCLOSED DIALOG
             check_require_kill()
 
@@ -148,7 +148,7 @@ class Corruption(Activity):
                 if not is_free_attempt_done: #FREE ENTRY NOT DONE  
                     click_npc_option()
 
-                elif not is_mob_attempt_done: #MOB ENTRY NOT DONE
+                elif not is_mob_attempt_done : #MOB ENTRY NOT DONE
                     click_npc_option(2)
                     time.sleep(1)
                     if  check_require_kill(): 
