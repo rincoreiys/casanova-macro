@@ -1,15 +1,11 @@
-import datetime, importlib
-
-from ..Gameplay.Dailies import ClaimBounty
-from ..Gameplay.Dailies import ClaimDailyBonus
+import  importlib
 from ..Gameplay.Dungeons.DungeonBlueprint import Dungeon
 from ..Helper.ErrorHandler import ActivityTimeoutException
 from ..Gameplay.Template import Activity
 from .Macro import *
 from .Global import config
 from .Thread import *
-from .Socket import emit, socket
-# run_screenshot_thread()
+from .Socket import emit
 
 class Automate:
     def login(self):
@@ -148,6 +144,6 @@ class Automate:
             self.proc()
             
             print(f"AUTOMATION DONE")
-        socket.sio.disconnect()
+        # socket.sio.disconnect()
 
 

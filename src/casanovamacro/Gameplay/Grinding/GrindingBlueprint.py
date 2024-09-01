@@ -14,6 +14,7 @@ class GrindGold(Activity):
     category:str = "Grind Gold"
     bag_already_empty_before:bool = False
     loot_focus:str= "equip"
+    required_space:int = 4
     
     #GRINDING FLOW
     def teleport(self):  
