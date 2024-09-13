@@ -90,8 +90,6 @@ class Corruption(Activity):
         if not self.is_inside: 
             if is_in_map("starglade"):    
                 self.first_time_claim = True
-                # if not self.bag_already_empty_before : #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
-                #     clean_bag(quick_clean=True, loot_focus=self.character_loot_focus, tp_usage=self.tp_usage, instance_obj=self)
                 self.talk_to_sg_battlemaster()
             elif is_in_map(self.image_path("hall")):   
                 self.talk_to_corruption_npc()
@@ -317,6 +315,7 @@ class Corruption(Activity):
     def prepare(self):
         set_loot_mode(item=self.need_corruption_loot, item_quality=config.character.corruption_loot_quality, radius=3)
         click(1326, 156, clicks=3) #ZOOM OUT MINI MAP
+        self.provide_bag_space()
         self.is_prepared = True
         close_all_dialog()
       

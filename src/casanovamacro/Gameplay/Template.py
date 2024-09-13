@@ -128,7 +128,8 @@ class Activity:
 
             self.bag_already_empty_before = number_of_empty_space >= self.required_space
             if  not self.bag_already_empty_before and self.backpack_settling_attempt >= 3:    
-                if self.loot_focus == "item"  : clean_bag(self.loot_focus, True)
+                if config.character.focus == "item"  : clean_bag(self.loot_focus, True)
+                elif config.character.focus == "equip" : selling_equip(False)
                 number_of_empty_space = check_last_page_slots()
 
             press("B")

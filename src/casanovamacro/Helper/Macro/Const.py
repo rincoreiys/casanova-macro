@@ -3,7 +3,7 @@ DEFAULT_CONFIDENCE = 0.98
 MAP_TIMEOUT = 20
 MAIN_CITY = "starglade"
 TP_SHORTCUT_COORDINATE = (539, 867)
-EXCLUSIVE_ROUTINES = ["Ladder", "ClaimFund", "PurchaseTorch"]
+EXCLUSIVE_ROUTINES = ["Ladder", "ClaimFund", "ClaimDaily", "PurchaseTorch"]
 
 #COORDINATE
 AFK_ICON_LOCATION = (860,949) #UPDATED 20/5/24
