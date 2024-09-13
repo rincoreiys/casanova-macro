@@ -161,7 +161,9 @@ def walk_to_map_coordinate(x=0,y=0, acknowledge=False, allow_afk=False, sequence
     CHARACTER_POINTER_ON_MAP_LOCATION  = ["common/character_on_map", (x-15, y-15, 30, 30)]
     result = False
     if allow_afk == False: 
-        if check_image_existance(AFK_STATE_RECOGNITION_LOCATION): press("n") # n = .
+        if check_image_existance(AFK_STATE_RECOGNITION_LOCATION): 
+            press("n") # n = .
+            sleep(1)
     if set_map_display(): 
         if sequence is not None:
             for x, y in sequence:

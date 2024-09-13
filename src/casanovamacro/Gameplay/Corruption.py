@@ -25,7 +25,7 @@ class Corruption(Activity):
     backtick_state:bool = False
     def read_pointer(self):
         while not self.done and self.running:
-            while not self.is_inside : time.sleep(1) #WILL OPERATE IF INSIDE CORRUPTION
+            while not self.is_inside : sleep(1) #WILL OPERATE IF INSIDE CORRUPTION
             if self.current_floor > 0:
                 if is_in_end():   
                     self.position = "end"
@@ -46,7 +46,7 @@ class Corruption(Activity):
                     press("1") #PREVENT INVISIBLE GHOST --> RUNNING DIRECTLY TO CLAIM NPC
             else:
                 self.position = ""
-            time.sleep(1)
+            sleep(1)
         
     def read_floor(self):
         while not self.done  and self.running:
@@ -54,7 +54,7 @@ class Corruption(Activity):
                 self.current_floor = 0  
             elif check_map_blank(): 
                 wait_map_load()
-                time.sleep(0.5)
+                sleep(0.5)
             else:
                 param =  self.current_floor if self.current_floor >  0 else  1
                 for i in range(param, self.max_floor+1, 1):
@@ -64,12 +64,12 @@ class Corruption(Activity):
                         self.current_floor = i
                         break
                     print("ccc", self.current_floor == self.max_floor, self.current_floor, self.max_floor )
-                    time.sleep(0.1)
+                    sleep(0.1)
            
             self.is_inside = self.current_floor > 0
             if self.is_inside: print("character at floor", self.current_floor)
             self.first_time_read_map = False
-            time.sleep(4)
+            sleep(4)
 
     def kill_mob(self):
         if wait_for_condition(fight_mob, timeout=3):
@@ -118,7 +118,7 @@ class Corruption(Activity):
         SG_BATTLEMASTER_DIALOG = ["dialog/battlemaster", NPC_DIALOG_REGION]
         if check_image_existance(SG_BATTLEMASTER_DIALOG): 
             click_npc_option()
-            time.sleep(0.5)
+            sleep(0.5)
             click_npc_option()
             wait_map(self.image_path("hall"))
             close_all_dialog()
@@ -148,7 +148,7 @@ class Corruption(Activity):
 
                 elif not is_mob_attempt_done : #MOB ENTRY NOT DONE
                     click_npc_option(2)
-                    time.sleep(1)
+                    sleep(1)
                     if  check_require_kill(): 
                         click_npc_option(5)
                         close_all_dialog() #CLOSE UNCLOSED DIALOG 
@@ -163,7 +163,7 @@ class Corruption(Activity):
                         ]
                         walk_to_map_coordinate(*(random.choice(AFK_SPOTS)), acknowledge=True) 
                         set_afk()
-                        time.sleep(180)
+                        sleep(180)
                         set_afk(False)
                         return
                 
@@ -180,7 +180,7 @@ class Corruption(Activity):
                 self.running = False
         else:
             talk_to_npc_by_map("corrupted_guard")
-            time.sleep(3)
+            sleep(3)
 
     def enter_gate(self):
         INNER_BATTLEMASTER_NPC_DIALOG_REGION = [self.image_path("inner_battlemaster_npc_dialog"), NPC_DIALOG_REGION]
@@ -208,9 +208,9 @@ class Corruption(Activity):
             print("#1")
             click_npc_option(1 if  self.current_floor == self.max_floor else 2 ) #TEST
             
-            time.sleep(0.2)
+            sleep(0.2)
             click_npc_option()
-            time.sleep(2)
+            sleep(2)
 
             if check_image_existance(CLAIMED_STATE):
                 self.claimed = True
@@ -219,40 +219,47 @@ class Corruption(Activity):
             if check_image_existance(REQUIRE_KILL_ALL_EXCEPTION): #ABNORMALLY HAPPENED
                 click(672,513)
                 self.kill_boss()
-                time.sleep(0.5)
+                sleep(0.5)
             else:
                 self.claimed = True
                 self.first_time_claim = False
                 self.position = ""
                 sleep(2)
                 return True
-            
-        elif check_image_existance(["common/character_on_minimap", (1224,35,39,46)]) and not fight_boss():
-            print("#2")
-            if self.need_uncover_attempt == 0:
-                click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
-            sleep(0.5) #GIVE SOME TIME TILL CHARACTER POINTER SETTLED PROPERLY
-            if set_map_display(False): click(475, 480)
-            sleep(0.5)
-        elif self.first_time_claim and not fight_boss():  
-            print("#3")
-            if wait_for_condition(fight_boss, True): 
-                while(fight_boss()): sleep(1)
-            set_afk(False)
-            if(self.walk_to_upstair_npc()):  
-                time.sleep(1) ##FIX CHARACTER VISUAL GLITCh
-                self.walk_to_upstair_npc() #MAKE SURE ITS HIT DESTINATION 
-                set_afk()
-                time.sleep(0.2)
         else:
-            print("#4")
-            self.walk_to_upstair_npc() #FIX MIDDLE MOB KEEP TARGETED WHEN AFK AT END POSITION AND OTHER MINOR BUG
-                # click(466, 385)
-                # time.sleep(1.5)
+            if check_image_existance(["common/character_on_minimap", (1224,35,39,46)]) and not fight_boss():
+                print("#2")
+                if self.need_uncover_attempt == 0 and not self.first_time_claim:
+                    click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
+                sleep(0.5) #GIVE SOME TIME TILL CHARACTER POINTER SETTLED PROPERLY
+                if set_map_display(False): click(475, 480)
+                sleep(0.5)
+            elif self.first_time_claim and not fight_boss():  
+                print("#3")
+                if wait_for_condition(fight_boss, True): 
+                    while(fight_boss()): sleep(1)
+                set_afk(False)
+                sleep(1) ##WAIT TILL AFK STATE CHANGED
+                if(self.walk_to_upstair_npc()):  
+                    sleep(1) ##FIX CHARACTER VISUAL GLITCh
+                    self.walk_to_upstair_npc() #MAKE SURE ITS HIT DESTINATION 
+                    set_afk()
+                    sleep(0.2)
+            else:
+                print("#4")
+                self.walk_to_upstair_npc() #FIX MIDDLE MOB KEEP TARGETED WHEN AFK AT END POSITION AND OTHER MINOR BUG
+                    # click(466, 385)
+                    # sleep(1.5)
 
     #UPDATED ON 22/5/24
     def walk_to_upstair_npc(self):
-        if not fight_boss(): return walk_to_map_coordinate(522, 381, allow_afk=(not self.first_time_claim), acknowledge=True) #FIX UNCOSISTENT COORDINATE WHEN CLICKING ON NPC
+        if not fight_boss(): 
+            result =  walk_to_map_coordinate(522, 381, allow_afk=(not self.first_time_claim), acknowledge=True) #FIX UNCOSISTENT COORDINATE WHEN CLICKING ON NPC
+            sleep(1) ##FIX CHARACTER VISUAL GLITCh
+            result =  walk_to_map_coordinate(522, 381, allow_afk=(not self.first_time_claim), acknowledge=True) ##FIX CHARACTER VISUAL GLITCh
+            return result
+
+        return False
         
     def upstair(self):
         #TRY UPSTAIR WHEN POINTER AT END OF MAP
@@ -264,7 +271,7 @@ class Corruption(Activity):
                 print("ALMODD", self.current_floor , self.floor_limit)
                 if self.current_floor == self.max_floor: click_npc_option(2)   
                 elif self.current_floor  >= self.floor_limit:  click_npc_option(3)
-                time.sleep(0.2)
+                sleep(0.2)
                 click_npc_option()
                 wait_map("map/starglade")
                 sleep(2)
@@ -274,12 +281,12 @@ class Corruption(Activity):
                 set_afk(False)
             else :
                 click_npc_option()
-                time.sleep(0.2)
+                sleep(0.2)
                 click_npc_option()
                 # self.current_floor += 1
                 wait_for_condition(lambda: self.position == "start") 
                 self.backtick_state = True
-            time.sleep(1)
+            sleep(1)
             self.claimed = False
             
 
@@ -355,9 +362,9 @@ class Corruption(Activity):
                 self.running = False
             else:
                 click(678, 475)
-                time.sleep(2)
+                sleep(2)
                 wait_map_load()
-                time.sleep(2)
+                sleep(2)
                 self.is_inside = False  
                 press(win32con.VK_ESCAPE, mode="unicode") 
                 press(win32con.VK_ESCAPE, mode="unicode") 
