@@ -21,6 +21,7 @@ class Corruption(Activity):
     required_space: int = floor_limit + (5 if need_corruption_loot else 0) + 1 #1 FOR BREATHING SPACE ON BAGPACK
     die_tolerance:int = 5
     first_time_read_map:bool = True
+    
     position:str = ""
     backtick_state:bool = False
     def read_pointer(self):
@@ -322,7 +323,7 @@ class Corruption(Activity):
     def prepare(self):
         set_loot_mode(item=self.need_corruption_loot, item_quality=config.character.corruption_loot_quality, radius=3)
         click(1326, 156, clicks=3) #ZOOM OUT MINI MAP
-        self.provide_bag_space()
+        if self.is_inside == False: self.provide_bag_space()
         self.is_prepared = True
         close_all_dialog()
       
@@ -345,8 +346,7 @@ class Corruption(Activity):
             print(self.activity_asset_directory, "starting")
             self.running = True
             if self.done : return
-            if not self.is_prepared:  self.prepare()
-            if not self.bag_already_empty_before and not self.is_inside:  pass
+            if not self.is_prepared :  self.prepare()
                 # self.provide_bag_space()
                     
             #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON

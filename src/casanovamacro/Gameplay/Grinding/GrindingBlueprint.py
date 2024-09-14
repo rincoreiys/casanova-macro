@@ -14,8 +14,8 @@ class GrindGold(Activity):
     category:str = "Grind Gold"
     bag_already_empty_before:bool = False
     loot_focus:str= "equip"
-    required_space:int = 4
-    
+    required_space:int = 6
+
     #GRINDING FLOW
     def teleport(self):  
         
@@ -42,6 +42,7 @@ class GrindGold(Activity):
         print(self.dg_index_number, self.dg_page_number)
         
         run_thread(self.die_detector)
+        run_thread(self.invalid_map_handler)
         try:
             self.activity_asset_directory = (self.__class__.__name__).replace("G", "")
             #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
@@ -71,8 +72,9 @@ class GrindGold(Activity):
 
     #MAIN FLOW
     def detect_location(self):
+        
         if is_in_map(self.image_path(self.afk_spot_map)):
-           
+            
             if   self.bag_already_empty_before  == False:    self.provide_bag_space()
             else:
                 if  walk_to_map_coordinate(*self.afk_coordinate, acknowledge=True):
@@ -104,7 +106,8 @@ class GrindGold(Activity):
         elif not check_map_blank():  #IF IN SOME RANDOM MAP
             at_one_of_transit_maps = False
             for m in self.transit_maps:
-                if is_in_map(self.image_path(m)): at_one_of_transit_maps = True
+                if is_in_map(self.image_path(m)): 
+                    at_one_of_transit_maps = True
                 break
             
             if at_one_of_transit_maps == False: 

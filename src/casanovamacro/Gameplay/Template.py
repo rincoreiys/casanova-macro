@@ -38,6 +38,13 @@ class Activity:
     def image_path(self, file): 
         print("img path cat:", self.category)
         return f"{self.category}/{self.activity_asset_directory}/{file}"
+    
+    def invalid_map_handler(self):
+        while not self.done and self.running:
+            if check_image_existance(image_location=["exception/invalid_map", (570,441,105,42)]): 
+                click(677, 517)
+            sleep(5)
+
 
     def die_detector(self):      
         while not self.done and self.running:
