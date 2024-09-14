@@ -91,6 +91,8 @@ class Activity:
                 else:
                     talk_to_npc_by_map("npc link/sg_seller", npc_index=3)
                     wait_for_image(["dialog/sg_seller" , NPC_DIALOG_REGION])
+        
+        self.backpack_settling_attempt = 3
 
 
     def go_to_main_city(self):
