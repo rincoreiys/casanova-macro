@@ -134,6 +134,7 @@ class Activity:
             number_of_empty_space = check_last_page_slots()
 
             self.bag_already_empty_before = number_of_empty_space >= self.required_space
+            print("EVAL THIS", not self.bag_already_empty_before and self.backpack_settling_attempt >= 3, config.character.focus)
             if  not self.bag_already_empty_before and self.backpack_settling_attempt >= 3:    
                 if config.character.focus == "item"  : clean_bag(self.loot_focus, True)
                 elif config.character.focus == "equip" : selling_equip(False)
