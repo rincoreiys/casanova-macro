@@ -43,7 +43,6 @@ class D125(Dungeon):
                 click_npc_option(option)
                 time.sleep(1)
                 theres_attempt =  check_image_existance([self.image_path("zero_attempt"), (463,427 , 422, 83) ]) == False
-                #print('attempt', theres_attempt)
                 if theres_attempt: click_npc_option()
                 else: click_npc_option(2) 
                 
@@ -53,7 +52,6 @@ class D125(Dungeon):
             self.is_2x_dungeon =  check_image_existance(["options/2x_dungeon", NPC_CHOICES_REGION])
             
             #PREFERABLE CHOOSE 2x attempt FIRST
-            print("checking 2x dg")
             if not self.dg2x_attempt_done and self.is_2x_dungeon: 
                 if not check_attempt(2) :  
                     self.dg2x_attempt_done = True
@@ -61,7 +59,6 @@ class D125(Dungeon):
                     self.is_inside = wait_for_image([self.image_path("instance"), MAP_REGION], timeout=4)
                     return
                 
-            print("checking normal attempt DG")
             if not self.free_attempt_done: 
                 if not check_attempt() : 
                     self.free_attempt_done = True
@@ -71,7 +68,7 @@ class D125(Dungeon):
 
             self.done = True
             # if self.done :
-                #print(f"{self.activity_asset_directory} DONE")
+            print(f"Macro:{self.activity_asset_directory}:Done")
             self.on_done()  #BACK TO CITY BY DEFAULT
             return
         else:
@@ -82,20 +79,16 @@ class D125(Dungeon):
     def detect_location(self):
         if not self.is_inside:
             if is_in_map(self.image_path(("entrance"))) :
-                print("#1")
                 self.is_inside = False
                 if not  self.bag_already_empty_before : 
                     self.provide_bag_space()
                 else: self.enter_instance()
           
             elif is_in_map(self.image_path("instance")):  
-                print("#2")
                 self.is_inside = True
        
             
             elif not check_map_blank():  #IF IN SOME RANDOM MAP
-                print("#4")
-                print("blank")
                 if self.faction_shortcut_unlocked: go_to_city_by_shortcut()
                 
                 # self.tp_usage += go_to_main_city()
@@ -104,7 +97,6 @@ class D125(Dungeon):
             if not self.on_enter_triggered:  self.on_enter()
             match self.phase:
                 case "enter_stone_zone":
-                    print("enter_stone_zone")
                     if check_image_existance([self.image_path("stone_npc_dialog"), NPC_DIALOG_REGION]) and self.timer_activated == False:
                         sleep(2)
                         if check_image_existance([self.image_path("stone_npc_dialog"), NPC_DIALOG_REGION]):

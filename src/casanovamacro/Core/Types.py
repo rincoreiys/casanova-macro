@@ -19,4 +19,3 @@ class Character:
     exclude_junk:list[str] = dataclasses.field(default_factory=list)
     character_index:int = 0
 
-

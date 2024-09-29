@@ -5,6 +5,7 @@ BOUNTY_ICON = ["iconbutton/bounty", (1031, 863, 35, 40)]
 
 class ClaimBounty(Daily):
     def init(self):
+        print(f"Macro:{self.__class__.__name__}:Starting")
         while not self.done:
             if not check_image_existance(BOUNTY_WINDOW):
                 click_on_image(BOUNTY_ICON)
@@ -14,5 +15,6 @@ class ClaimBounty(Daily):
                 sleep(1)
                 self.done = True
         close_all_dialog()
+        print(f"Macro:{self.__class__.__name__}:Done")
 
 

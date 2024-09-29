@@ -1,7 +1,6 @@
 ## MORE COMPLEX GAME FUNCTION 
-from ..Socket import emit
-from ...Helper.Macro.Game import * 
-from ...Helper.Global import * 
+# from ..Socket import emit
+from .Game import *
 
 #UPDATED 20/5/24 WORKING ALPHA
 def open_synth_window():
@@ -48,7 +47,7 @@ def synthesis_aterfact():
     while True: 
         open_synth_window()
         if check_image_existance(ARTEFACT_ESSENCE_IMAGE):
-            print("ESSENCE FOUND")
+            # print("ESSENCE FOUND")
             click(548, 308, clicks=2)
             sleep(0.3)
             click(*COUNTER_UP_BUTTON_LOCATION) #COUNTER UP PRESS 
@@ -60,16 +59,16 @@ def synthesis_aterfact():
             refresh()
             if not check_image_existance(ARTEFACT_ESSENCE_IMAGE): break
 
-            print("Nothing to synthetized")
+            # print("Nothing to synthetized")
             
     click(754, 762) #CLOSE THE SYTNH DIALOG, SOMETIME ACCIDENTALLY PRESSING D HOTKEY
     return True
         
 def check_has_money():
     has_money = check_image_existance(["state/no_platinum", (627, 671, 51,15)]) == False
-    emit("update_character_fields", {
-        "need_gold": has_money == False
-    })
+    # emit("update_character_fields", {
+    #     "need_gold": has_money == False
+    # })
 
     return has_money
     
@@ -129,16 +128,14 @@ def synthesis_gems(timeout = -1 ): #-1 FOR NOT SET TIME UP
                         and timeup > 0
                         ):  #HANDLE IF SOMETHING WRONG HAPPENED, EG WINDOW MOVED OR CLOSED
                         # if grade == 3:
-                        print("grade is ", grade)
-                        print("pc empty: ", pc_empty, " grade: ", grade )
-                        print("timeup", timeup )
+                        # print("grade is ", grade)
+                        # print("pc empty: ", pc_empty, " grade: ", grade )
+                        # print("timeup", timeup )
                         click(*COUNTER_UP_BUTTON_LOCATION, clicks=2)
                         sleep(1)
                        
                         if timeup > 0: timeup -=  1
                     if timeup == 0: raise Exception("GEM TIME UP")
-
-                        
         return True
     
     try:
@@ -149,7 +146,7 @@ def synthesis_gems(timeout = -1 ): #-1 FOR NOT SET TIME UP
             else:
                 if is_bag_settled():
                     if check_has_money() == False: 
-                        print("CHARACTER NEEDS MORE THAN 1 PLATINUM TO DO THIS")
+                        print("Macro:Action: 1 Platinum required to synth gemd")
                         
                         return False
                     else:
@@ -162,7 +159,8 @@ def synthesis_gems(timeout = -1 ): #-1 FOR NOT SET TIME UP
                         press("B")
                         settling_bag_position()
     except Exception:
-        print("SYNTH GEMS TIMEOUT")
+        print("Macro:Action:Synth Gems Timeout")
+        # print("SYNTH GEMS TIMEOUT")
    
 #UPDATED 30/5/24 
 def read_empty_space( sorted=False): #UPDATED
@@ -176,45 +174,42 @@ def read_empty_space( sorted=False): #UPDATED
     time.sleep(5)
     
     try:
-        from ...Helper.Macro.Base import image_storage
+        from ..Macro.Base import image_storage
         number_of_empty_space =  len(list(pyautogui.locateAll(needleImage=asset_path("state/empty_slot.png"), haystackImage=image_storage.image,  confidence=DEFAULT_CONFIDENCE, region=BAGPACK_REGION)))
-        print("THERE IS ENOUGH SPACE")
+        print("Macro:Base:There's enoug space")
         return number_of_empty_space
     except Exception: 
         return 0
 
 def repair_equip():
-    if still_talking_with_vendor():
-        click(151, 539)
-        time.sleep(1)
-        # if wait_for_image(imagePath=asset_path("Dialog/repair_equip"), region=(617, 312, 141, 30),  timeout=5):
-        click(724, 458 )
-        time.sleep(2)
-        click(785, 330 ) #CLOSE UNCLOSED REPAIR DIALOG
-        print("Repair Done")
-        return
+    while True:
+        if still_talking_with_vendor():
+            click(151, 539)
+            time.sleep(1)
+            # if wait_for_image(imagePath=asset_path("Dialog/repair_equip"), region=(617, 312, 141, 30),  timeout=5):
+            click(724, 458 )
+            time.sleep(2)
+            click(785, 330 ) #CLOSE UNCLOSED REPAIR DIALOG
+            return
 
-    elif check_image_existance(imagePath=asset_path("Dialog/npc_dialog"), region=NPC_DIALOG_REGION):
-        click(845, 282)
-        time.sleep(0.5)
-        click(545,355) 
-        
-        time.sleep(2)
-        return
-        
-        # #print("ee", still_talking_with_vendor(), is_bag_settled())
-    else:
-        talk_to_npc_by_map(imagePath=asset_path("NPC Link/sg_seller"), scroll_position=4)
-        wait_for_image(imagePath=asset_path("Dialog/npc_dialog"), region=NPC_DIALOG_REGION)
-   
-    repair_equip()
+        elif check_image_existance(imagePath=asset_path("Dialog/npc_dialog"), region=NPC_DIALOG_REGION):
+            click(845, 282)
+            time.sleep(0.5)
+            click(545,355) 
+            
+            time.sleep(2)
+            return
+        else:
+            talk_to_npc_by_map(imagePath=asset_path("NPC Link/sg_seller"), scroll_position=4)
+            wait_for_image(imagePath=asset_path("Dialog/npc_dialog"), region=NPC_DIALOG_REGION)
+    
 
 def drop_junk(quick_clean=False):
     #print(quick_clean, "qc")
     
     path_of_the_directory= asset_path("Junk")
     files = list(filter(lambda filename : os.path.isfile(os.path.join(path_of_the_directory,filename)) ,  os.listdir(path_of_the_directory)))
-    print(files)
+    # print(files)
     click_confirm()   #CLICK UNCLOSED CONFIRM DIALOG
     time.sleep(1)
         
@@ -222,10 +217,11 @@ def drop_junk(quick_clean=False):
     def get_junk_coordinates():
        
         junks = []
+        
         for file in files:
-            from ...Helper.Macro.Base import image_storage
+            from ..Macro.Base import image_storage
             f = os.path.join(path_of_the_directory,file)
-            print("f is", f)
+            
             
             try:
                 result  = list(pyautogui.locateAll(needleImage=f, haystackImage=image_storage.image,  confidence=DEFAULT_CONFIDENCE, region=BAGPACK_REGION, grayscale=False))
@@ -236,18 +232,19 @@ def drop_junk(quick_clean=False):
             except Exception as e: pass
         return junks
 
-    print("reading junk ",  result)
+    print(f"Macro:Action:Reading junk is = {result}")
     
     for i in range(2): #DOUBLE CHECKING JUNK
-        junk_coordinates =  get_junk_coordinates()
-        for c in junk_coordinates:
-            click_confirm()  #CLICK UNCLOSED CONFIRM DIALOG
-            if is_bag_settled(): 
-                drag(start=c, end=(1172,533))
-                sleep(1)
-                click_confirm()
-
-        print("JUNK COORDINATES", junk_coordinates)
+        if is_bag_settled():
+            junk_coordinates =  get_junk_coordinates()
+            for c in junk_coordinates:
+                click_confirm()  #CLICK UNCLOSED CONFIRM DIALOG
+                if is_bag_settled(): 
+                    drag(start=c, end=(1172,533))
+                    sleep(1)
+                    click_confirm()
+            print(f"Macro:Action:Junk Coordinates {result}")
+        
  
 def check_last_page_slots(need_sort = True):
     if is_bag_settled():
@@ -258,11 +255,10 @@ def check_last_page_slots(need_sort = True):
         sleep(1)
         return read_empty_space(True)
     else:
-        print("PAGE UNEXPECTEDLY CLOSED")
+        print("Macro:Action:Page unexpectedly closed")
         return 0
 
 def clean_bag(loot_focus, quick_clean:bool = False):
-    
     def clean_junk(): 
         #CLICK PAGE 6 FIRST
         for page_number in BAG_PAGE_NUMBER_LOCATION:
@@ -270,21 +266,20 @@ def clean_bag(loot_focus, quick_clean:bool = False):
                 click(*page_number, clicks=2 ) #CLICK ON PAGE NUMBER
                 time.sleep(2)
                 if not check_image_existance(EMPTY_PAGE_LOCATION):
-                    # pass
-                    print("PAGE ", page_number, "JUNKS", )
                     drop_junk(quick_clean)
             
             else: return False
-        
-    if is_bag_settled():
-        if  clean_junk() == False: return False
-        check_last_page_slots(loot_focus)
-        if   not quick_clean :  synthesis_gems()
-        return True
-    else:
-        press("B")
-        sleep(1)
-        clean_bag(loot_focus, quick_clean)
+
+    while True:
+        if is_bag_settled():
+            if  clean_junk() == False: return False
+            check_last_page_slots(loot_focus)
+            if   not quick_clean :  synthesis_gems()
+            return True
+        else:
+            press("B")
+            sleep(1)
+            
 
 def settling_bag_position():
     while not is_bag_settled():
@@ -327,10 +322,9 @@ def selling_proc(brief_selling=False):
       
         try:
             timeout -= 1
-            from ...Helper.Macro.Base import image_storage
+            from ..Macro.Base import image_storage
             number_of_empty_slot = len(list(pyautogui.locateAll(needleImage=asset_path("state/empty_slot.png"), haystackImage=image_storage.image,  confidence=DEFAULT_CONFIDENCE, region=BAGPACK_REGION)))
             result = number_of_empty_slot > 30 or timeout <= 0 
-            print("number_of_empty_slot", number_of_empty_slot  )
         except Exception: pass
         finally: 
             sleep(1)
@@ -348,8 +342,8 @@ def selling_equip(need_synth_artefact=True):
             if not extract_artefact_result and need_synth_artefact:
                 extract_artefact_result = synthesis_aterfact()
             time.sleep(0.5)
-            if not selling_proc(): selling_equip() #IF PROCESS WHEN SELLING IS INTRUPTED OR DIALOG CLOSE UNINTENTIONALLY, RUN THE PROCESS FROM THE START
-            print("SELLING EQUIP DONE")
+            if not selling_proc(): continue #IF PROCESS WHEN SELLING IS INTRUPTED OR DIALOG CLOSE UNINTENTIONALLY, RUN THE PROCESS FROM THE START
+            print("Macro:Action:Selling Equip Done ")
             press(win32con.VK_ESCAPE, mode="unicode") # CLOSE ALL NPC SHOP WINDOW
             sleep(0.1)
             press(win32con.VK_ESCAPE, mode="unicode") # CLOSE BAG
@@ -377,16 +371,6 @@ def go_to_city_by_shortcut():
                 time.sleep(1)
         set_top_menu(False)
         close_all_dialog()
-
-
-def check_routine_by_event_tab(): #UPDATED
-
-    
-    undone_routine = [item for item in config.character.routines if item not in config.character.done]
-    # print(undone_routine[0])
-    #CLOSE THE EVENT TAB
-    close_all_dialog()
-    return undone_routine
 
 def use_energy_particle():
     drag(start=(804, 942), end=(876, 301))

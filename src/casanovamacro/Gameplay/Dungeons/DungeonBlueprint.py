@@ -1,9 +1,9 @@
 
 from ..Template import *
 from dataclasses import dataclass, field
-from ...Helper.ErrorHandler import run_thread
+from ...Core.ErrorHandler import run_thread
 # from ...Helper.ErrorHandler import run_thread
-from ...Helper.Global import config
+from ...Core.Global import config
 
 @dataclass
 class Dungeon(Activity):
@@ -68,7 +68,6 @@ class Dungeon(Activity):
                 click_npc_option(option)
                 time.sleep(1)
                 theres_attempt =  check_image_existance([self.image_path("zero_attempt"), (463,427 , 422, 83) ]) == False
-                #print('attempt', theres_attempt)
                 if theres_attempt:
                     # click(difficulty_x , difficulty_y)
                     click_npc_option(self.difficulty)
@@ -78,9 +77,9 @@ class Dungeon(Activity):
                             #CLICK CONFIRM
                             click(674, 516)
                             self.is_dk_empty = True
-                            emit("update_character_fields", {
-                                "need_dk": self.is_dk_empty
-                            })
+                            # emit("update_character_fields", {
+                            #     "need_dk": self.is_dk_empty
+                            # })
 
                             return False
                     else:
@@ -97,7 +96,6 @@ class Dungeon(Activity):
             self.is_2x_dungeon =  check_image_existance(["options/2x_dungeon", NPC_CHOICES_REGION])
             
             #PREFERABLE CHOOSE 2x attempt FIRST
-            print("checking 2x dg")
             if not self.dg2x_attempt_done and self.is_2x_dungeon: 
                 
                 if not check_attempt(3) :  
@@ -107,7 +105,6 @@ class Dungeon(Activity):
                     return
             
             #SECOND CHOOSE DK
-            print("checking DK dg")
             if not self.dk_attempt_done and self.require_dk and self.is_dk_empty == False:
                 if not check_attempt(2) :   
                     self.dk_attempt_done = True
@@ -115,7 +112,6 @@ class Dungeon(Activity):
                     self.is_inside = wait_for_image([self.image_path("instance"), MAP_REGION], timeout=4)
                 return #SPECIAL CASE RETURN
 
-            print("checking normal attempt DG")
             if not self.free_attempt_done: 
                 if not check_attempt() : 
                     self.free_attempt_done = True
@@ -123,15 +119,7 @@ class Dungeon(Activity):
                     self.is_inside = wait_for_image([self.image_path("instance"), MAP_REGION], timeout=4)
                     return
 
-            # #print("Free attempt", self.free_attempt_done , "paid" , self.dk_attempt_done)
-            # self.done =  (
-            #     self.free_attempt_done and 
-            #     (self.dg2x_attempt_done == self.is_2x_dungeon ) and
-            #     (self.dk_attempt_done == self.require_dk) 
-            # )  #DISABLED TO AVOID ERROR WHEN RECOGNITION 2x DG EVENT STILL ON GOING ACTUALLY ITS ENDED
             self.done = True
-            # if self.done :
-                #print(f"{self.activity_asset_directory} DONE")
             self.on_done()  #BACK TO CITY BY DEFAULT
             return
         else:
@@ -147,8 +135,6 @@ class Dungeon(Activity):
         arrive =   walk_to_map_coordinate(*boss_coordinate, acknowledge=True)
   
         if arrive:
-            # sleep()
-            # print("yuii")
             afk_if_mob_exist(loot_time=self.loot_time, loot_focus=self.loot_focus)
            
             if  self.inner_position == len(self.boss_coordinates) + 1: #LAST BOSS DG 275 SPECIAL CONDITION
@@ -160,7 +146,6 @@ class Dungeon(Activity):
                 self.exit()
         else:
             sleep(1)
-
    
         # WILL CLEAN TRASH ON NEXT ROUTINE
 
@@ -178,11 +163,6 @@ class Dungeon(Activity):
         self.on_after_exit()
         
     def prepare(self):
-        
-       
-
-        print("loot config", self.loot_config)
-
         #PREPARE AFK SAFETY, AFK TIME, HO AND USE SOME USABLE TO PRESERVE MORE SPACE
         if self.loot_focus == "item": 
             click(697, 865, clicks=10)
@@ -195,72 +175,67 @@ class Dungeon(Activity):
         self.is_prepared = True
         close_all_dialog() 
 
-     #MAIN FLOW
-    
-            
-    
+    #MAIN FLOW
+    def die_detector(self):      
+        print(f"Macro:{self.__class__.__name__}:Die Detector Started")
+        while not self.done and self.running:
+            while self.die_count < self.die_tolerance and not self.done:
+                if check_image_existance(["exception/die", (503,377, 341, 237)]):
+                    self.in_error_calibration = True
+                    click(673, 597)
+
+                    if self.activity_asset_directory == "175" and self.is_inside == False :
+                        self.die_count += 1 # DG 175 SPECIAL CASE
+
+                    sleep(2)
+                    self.is_inside = False
+                    self.in_error_calibration = False
+                    
+                    press("esc") 
+                sleep(2)
+            sleep(2)
+
+        print(f"Macro:{self.__class__.__name__}:Die Detector Stopped")
+
     def init(self):
         self.running = True
         self.require_dk = self.activity_asset_directory in config.character.require_dk or self.require_dk
 
         run_thread(self.die_detector)
-        try:
-            self.activity_asset_directory = (self.__class__.__name__).replace("D", "")
-            #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
-            print(self.activity_asset_directory, "starting")
-            if self.done : return
-            if not self.is_prepared:  self.prepare()
-            if not self.is_inside:  
-                if self.backpack_settling_attempt < 3:  self.settling_bag_position()
-                self.provide_bag_space()
-                    
-            #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
-            while not self.done and self.running and self.die_count < self.die_tolerance:   
-                self.get_rid_blocking_notif()
-                # print("detect_location")
-                self.detect_location()
+        self.activity_asset_directory = (self.__class__.__name__).replace("D", "")
+        #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
+        if self.done : return
+        if not self.is_prepared:  self.prepare()
+        if not self.is_inside:  
+            if self.backpack_settling_attempt < 3:  self.settling_bag_position()
+            self.provide_bag_space()
+                
+        #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
+        while not self.done and self.running and self.die_count < self.die_tolerance:   
+            # self.get_rid_blocking_notif()
+            # print("detect_location")
+            
+            self.detect_location()
 
-            if self.error is not None:
-                raise self.error
-            else:
-                print(self.error)
-                print(self.activity_asset_directory, "done")
         
-        except CharacterDieException as de: 
-            #DG 175 CASE. IF SOME PEEPS KILLING OUTSIDE DG 3 TIMES, HALT PROCESS
-            if not self.is_inside: self.die_count += 1 
-            if self.die_count == self.die_tolerance: 
-                self.done = False
-                self.running = False
-                print("SOMEONE MIGHT HUNTING YOU, HALT THE SCRIPT")
-            else:
-                click(678, 475)
-                time.sleep(2)
-                wait_map_load()
-                time.sleep(2)
-                self.is_inside = False 
-                self.inner_position = 1 
-                press("esc") 
-                self.init()
-
-    
-
     #MAIN FLOW
     def detect_location(self):
+        if self.in_error_calibration: 
+            sleep(5)
+            return
+        
         if not self.is_inside:
             if is_in_map(self.image_path(("entrance"))) :
-                print("#1")
+           
                 self.is_inside = False
                 if not  self.bag_already_empty_before : 
                     self.provide_bag_space()
                 else: self.enter_instance()
           
             elif is_in_map(self.image_path("instance")):  
-                print("#2")
                 self.is_inside = True
             
             elif  is_in_map(MAIN_CITY) : 
-                print("#3")
                 self.is_inside = False
                 if not self.bag_already_empty_before : #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
                     if(self.loot_focus == "equip") :   
@@ -273,8 +248,6 @@ class Dungeon(Activity):
                 self.go_to_entrance()
             
             elif not check_map_blank():  #IF IN SOME RANDOM MAP
-                print("#4")
-                print("blank")
                 if self.faction_shortcut_unlocked: go_to_city_by_shortcut()
                 
                 # self.tp_usage += go_to_main_city()

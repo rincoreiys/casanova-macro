@@ -70,7 +70,6 @@ class D75(Dungeon):
        
         if  self.in_chamber and self.is_inside : 
             afk_if_mob_exist(loot_time=self.loot_time, timeout=4)
-            #print("done 75 afk ")
             if  self.inner_position == len(self.boss_coordinates):
                 self.in_chamber = False
                 #reset dynamic time loot

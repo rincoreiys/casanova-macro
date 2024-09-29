@@ -1,9 +1,24 @@
-from casanovamacro.Helper.ErrorHandler import run_thread
+from ...Core.Thread import run_thread
 from .Blueprint import *
 @dataclass
 class Ladder(Daily):
     activity_asset_directory:str = "Ladder"
-    required_space:int = 8
+    required_space:int = 10
+
+    def die_detector(self):      
+        print(f"Macro:{self.__class__.__name__}:Die Detector Started")
+        while not self.done and self.running:
+            if check_image_existance(["exception/die", (503,377, 341, 237)]):
+                self.in_error_calibration = True
+                click(673, 597)
+                sleep(2)
+                self.is_inside = False
+                self.in_error_calibration = False
+                break
+            sleep(2)
+
+        print(f"Macro:{self.__class__.__name__}:Die Detector Stopped")
+
     def go_to_entrance(self):
         if check_image_existance(TELEPORTER_DIALOG) :
             click_npc_option(3)
@@ -62,25 +77,25 @@ class Ladder(Daily):
 
 
     def detect_location(self):
-        self.get_rid_blocking_notif()
+        if self.in_error_calibration: 
+            sleep(5)
+            return
+        # self.get_rid_blocking_notif()
         if not self.is_inside:
             if is_in_map(self.image_path(("entrance"))) :
                 self.enter_instance()
           
             elif is_in_map(self.image_path(f"instance{config.character.ladder_checkpoint}")):  
-                print("#2")
+                print(f"Macro:Ladder:Character at {config.character.ladder_checkpoint} floor")
                 self.is_inside = True
             
             elif  is_in_map(MAIN_CITY) : 
-                print("#3")
                 if not self.bag_already_empty_before : #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
                     self.backpack_settling_attempt = 3
                     self.bag_already_empty_before = True
                 self.go_to_entrance()
             
             elif not check_map_blank():  #IF IN SOME RANDOM MAP
-                print("#4")
-                print("blank")
                 if self.faction_shortcut_unlocked: go_to_city_by_shortcut()
                 
         if self.is_inside:
@@ -92,7 +107,7 @@ class Ladder(Daily):
         run_thread(self.die_detector)
         try:
             #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
-            print(self.activity_asset_directory, "starting")
+            print(f"Macro:{self.__class__.__name__}:Starting")
             if self.done : return
 
             #IF ITS ONLY LEADDER AUTOMATION NO NEED TO SETTLE 
@@ -102,25 +117,21 @@ class Ladder(Daily):
 
             
             #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
-            while not self.done and self.running and self.die_count < self.die_tolerance:   
+            while not self.done and self.running :   
                 self.detect_location()
-            print(self.activity_asset_directory, "done")
+
+            sleep(2)
+            print(f"Macro:Ladder:Done")
         
         except CharacterDieException as de: 
-            self.die_count += 1
-            if self.die_count == self.die_tolerance: 
-                self.done = False
-                self.running = False
-                print("LOAD MAP TOOK LONG TIME, MOB MAKE YOU DEAD")
-            else:
-                click(678, 475)
-                time.sleep(2)
-                wait_map_load()
-                time.sleep(2)
-                self.is_inside = False 
-                self.inner_position = 1 
-                press("esc") 
-                self.init()
+            click(678, 475)
+            time.sleep(2)
+            wait_map_load()
+            time.sleep(2)
+            self.is_inside = False 
+            self.inner_position = 1 
+            press("esc") 
+            self.init()
 
     def exit(self):
         set_party(False)

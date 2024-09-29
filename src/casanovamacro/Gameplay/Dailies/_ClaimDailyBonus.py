@@ -3,6 +3,7 @@ DAILY_BONUS_WINDOW = ["window/daily_bonus", (595, 262, 163, 36)]
 
 class ClaimDailyBonus(Daily):
     def init(self):
+        print(f"Macro:{self.__class__.__name__}:Starting")
         while not self.done:
             if not check_image_existance(DAILY_BONUS_WINDOW):
                 click(1179, 62)
@@ -22,5 +23,6 @@ class ClaimDailyBonus(Daily):
                 sleep(.5)
                 self.done = True
         close_all_dialog()
+        print(f"Macro:{self.__class__.__name__}:Done")
 
 

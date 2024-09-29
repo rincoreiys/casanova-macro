@@ -18,7 +18,6 @@ class GrindGold(Activity):
 
     #GRINDING FLOW
     def teleport(self):  
-        
         if check_image_existance(DUNGEON_TELEPORTER_DIALOG):
             click_npc_option(self.dg_page_number)
             sleep(1) #FIX WRONG TELEPORTED BECAUSE FPS ISSUE
@@ -30,6 +29,15 @@ class GrindGold(Activity):
 
     def walk_to_afk_spot(self): pass
 
+    def die_detector(self):      
+        while self.running:
+            if check_image_existance(["exception/die", (503,377, 341, 237)]):
+                self.in_error_calibration = True
+                click(673, 597)
+                wait_for_image( ["map/starglade", MAP_REGION], True,timeout=MAP_TIMEOUT)
+                self.in_error_calibration = False
+            sleep(5)
+
     def prepare(self):
         set_loot_mode(equip=True, equip_quality=0, radius=3)
         self.is_prepared = True
@@ -39,39 +47,23 @@ class GrindGold(Activity):
 
     def init(self):
         self.running = True
-        print(self.dg_index_number, self.dg_page_number)
-        
         run_thread(self.die_detector)
         run_thread(self.invalid_map_handler)
-        try:
-            self.activity_asset_directory = (self.__class__.__name__).replace("G", "")
-            #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
-            print(self.activity_asset_directory, "starting")
-            if not self.is_prepared:  self.prepare()
-            self.provide_bag_space()
-                    
-            #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
-            while self.running and self.die_count < self.die_tolerance:   
-                print("detect_location")
-                self.detect_location()
-        
-        except CharacterDieException as de: 
-            self.die_count += 1
-            if self.die_count == self.die_tolerance: 
-                self.running = False
-                print("SOMEONE MIGHT HUNTING YOU, HALT THE SCRIPT")
-            else:
-                click(678, 475)
-                time.sleep(2)
-                wait_map_load()
-                time.sleep(2)
-                self.is_inside = False 
-                self.inner_position = 1 
-                press("esc") 
-                self.init()
+        self.activity_asset_directory = (self.__class__.__name__).replace("G", "")
+        #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
+        if not self.is_prepared:  self.prepare()
+        self.provide_bag_space()
+                
+        #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
+        while self.running:   
+            self.detect_location()
+    
 
     #MAIN FLOW
     def detect_location(self):
+        if self.in_error_calibration: 
+            sleep(5)
+            return
         
         if is_in_map(self.image_path(self.afk_spot_map)):
             

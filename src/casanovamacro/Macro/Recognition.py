@@ -1,4 +1,4 @@
-from ...Helper.Macro.Base import *
+from .Base import *
 
 check_map_blank = lambda: not check_image_existance(ONLINE_STATE_RECOGNITION_LOCATION) #UPDATED
 still_talking_with_vendor =  lambda: check_image_existance(VENDOR_WINDOW_LOCATION)

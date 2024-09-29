@@ -10,11 +10,11 @@ class Event(Activity):
         self.running = False
         
     def init(self):
-        print("cat", self.category)
+        # print("cat", self.category)
         self.activity_asset_directory = (self.__class__.__name__)
         self.running = True
         while not self.done and self.running:   
-            self.get_rid_blocking_notif()
+            # self.get_rid_blocking_notif()
             self.detect_location()
 
             

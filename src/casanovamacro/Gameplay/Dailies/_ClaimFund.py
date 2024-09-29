@@ -1,5 +1,6 @@
+from ...Core.API import post, update_character
 from .Blueprint import *
-from ...Helper.Socket import emit
+# from ...Core.Socket import emit
 DELUXE_CLAIM_BUTTON = ["common/claim_button", (791, 576, 123, 41)]
 REGULAR_CLAIM_BUTTON = ["common/claim_button", (460, 576, 123, 41)]
 REGULAR_CLAIMED_BUTTON = ["common/claimed_button", (460, 576, 123, 41)]
@@ -12,6 +13,7 @@ FUND_WINDOW_REGION = ["window/fund", (514, 255, 316, 68)]
 class ClaimFund(Daily):
     activity_asset_directory:str = "ClaimFund"
     def init(self):
+        print(f"Macro:{self.__class__.__name__}:Starting")
         regular_claimed = False
         deluxe_claimed = False
         regular_fund_empty = False
@@ -44,13 +46,16 @@ class ClaimFund(Daily):
                 break
 
         self.done = True
-        emit("update_character_fields", {
+        update_character({
             "deluxe_fund_claimed": deluxe_claimed,
             "regular_fund_claimed": regular_claimed,
             "regular_fund_empty": regular_fund_empty,
             "deluxe_fund_empty" : deluxe_fund_empty
         })
+
         close_all_dialog()
         set_top_menu(False)
+        print(f"Macro:{self.__class__.__name__}:Done")
+        
 
 

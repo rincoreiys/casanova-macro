@@ -121,5 +121,5 @@ class D215(Dungeon):
                     
                 if len(self.done_color) < self.target_boss : self.get_buff()
             except:
-                print("Color is None, Repeat Process")
+                print("Macro:D215:Color is None, Repeat Process")
                 

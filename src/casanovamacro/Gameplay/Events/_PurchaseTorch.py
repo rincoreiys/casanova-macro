@@ -37,8 +37,6 @@ class PurchaseTorch(Event):
                 talk_to_npc_by_map("mysterious_man", npc_index=1)
 
         elif not check_map_blank():  #IF IN SOME RANDOM MAP
-            print("#4")
-            print("blank")
             if config.character.faction_shortcut_unlocked: go_to_city_by_shortcut()
             
 

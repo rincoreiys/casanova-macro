@@ -1,13 +1,10 @@
 
 import ctypes
-from threading import Thread
-import pyautogui, time, os, win32api, win32gui, win32con, win32ui
+import pyautogui, time, os, win32api, win32con, win32ui
 from ctypes import windll, wintypes
 from time import sleep
-
-import casanovamacro
-from ...Helper.Global import *
-from ...Helper.Macro.Const import *
+from ..Core.Global import config
+from .Const import *
 from PIL import Image
 
 user32 = ctypes.windll.user32
@@ -18,7 +15,10 @@ class ImageStorage:
 
 image_storage = ImageStorage()
 
-def asset_path(path):  return  os.path.join(*casanovamacro.__path__, f"Assets/img/{path}")
+def asset_path(path):  
+    import casanovamacro
+    return  os.path.join(*casanovamacro.__path__, f"Assets/img/{path}")
+
 pyautogui.FAILSAFE = False
 def click( x=0, y=0, clicks=1, step=0.01): #UPDATED
     for click in range(clicks):
@@ -73,13 +73,11 @@ def screenshot(show=False): #UPDATED
         
         w = rect.right - rect.left
         h = rect.bottom - rect.top
-        # print("rct",  w, h)
         
         hwndDC = user32.GetWindowDC(hwnd)
         mfcDC  =  win32ui.CreateDCFromHandle(hwndDC)
         # mfcDC = gdi32.CreateCompatibleDC(hwndDC)
 
-        # print("mfdc", mfcDC)
         saveDC = mfcDC.CreateCompatibleDC()
 
         saveBitMap = win32ui.CreateBitmap()
@@ -106,8 +104,9 @@ def screenshot(show=False): #UPDATED
       
         image_storage.image = im
         if raw_find_image(["exception/blank_screenshot",( 0, 0 , 1364,64)]):
-            print("FAILED")
-            raise Exception()
+            
+            # print("FAILED")
+            raise Exception("Blank image")
         
         image_storage.state =  True
         # # if SCREENSHOT_STATE: minimize_flash()
@@ -122,9 +121,7 @@ def screenshot(show=False): #UPDATED
             # image.save(os.path.join(*casanovamacro.__path__, "Temp", f"{config.flash_hwnd}{time.time()}.png") )
         
     except Exception as ex:
-        print("Grab image failure", ex)
-        
-    # print("ppp", os.path.join(*casanovamacro.__path__))
+        print('Image:Error: Failure is ',ex)
   
    
 def find_image(image_location, confidence=DEFAULT_CONFIDENCE, grayscale=False) -> pyautogui.Point : #UPDATED 
@@ -141,10 +138,10 @@ def find_image(image_location, confidence=DEFAULT_CONFIDENCE, grayscale=False) -
                                   grayscale=grayscale)
         return result
     except pyautogui.ImageNotFoundException:
-        print(f'Image not Found {image_location[0]}')
+        print(f"Image:Not Found:{image_location}")
         return None
     except  Exception as ex:
-        print("IMG Find Image Failure", ex)
+        print('Image:Error: Failure is ',ex)
     
 
 def raw_find_image(image_location, confidence=1, grayscale=False) -> pyautogui.Point :
@@ -159,7 +156,7 @@ def raw_find_image(image_location, confidence=1, grayscale=False) -> pyautogui.P
 
 def check_image_existance(image_location, confidence=DEFAULT_CONFIDENCE, grayscale=False) : #UPDATED
     result = find_image(image_location, confidence=confidence, grayscale=grayscale) 
-    print(image_location[0], result, confidence, DEFAULT_CONFIDENCE)
+    # print(image_location[0], result, confidence, DEFAULT_CONFIDENCE)
     return result is not None
 
 def minimize_flash():  config.flash.SendMessage(win32con.WM_SYSCOMMAND, win32con.SC_MINIMIZE) #UPDATED
@@ -176,7 +173,7 @@ def wait_for_image(image_location, state = True, timeout=2, confidence=DEFAULT_C
             if timeout <= 0: 
                 return False
         else:
-            print(F" IMAGE FOUND {image_location[0]}")
+            print(f"Image:Found:{ image_location}")
             return True
         sleep(step)#in second unit
 
@@ -191,7 +188,7 @@ def wait_for_condition(condition, ret_value=True,timeout=5, step=0.5):  #UPDATED
 
 def click_on_image(image_location, clicks = 1, confidence=DEFAULT_CONFIDENCE, timeout=None) : #UPDATED
     image =  find_image(image_location, confidence)
-    print(" click img", image_location, image)
+    # print(" click img", image_location, image)
     if image is not None:
         x, y, w, h = image
         click(x+ int(w/2), y + int(h/2), clicks)

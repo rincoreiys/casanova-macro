@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ...Helper.Macro import *
+from ...Macro import *
 from .GrindingBlueprint import GrindGold
 
 @dataclass
@@ -10,7 +10,7 @@ class G340(GrindGold):
     dg_page_number = 4
     transit_maps = ["hot_rain_plain"]
     def walk_to_afk_spot(self):
-        while is_in_map(self.image_path("south_river")) == False:
+        while is_in_map(self.image_path("south_river")) == False and self.running:
             if is_in_map(self.image_path("hot_rain_plain")):
                 walk_to_map_by_link(self.image_path("south_river_link"), self.image_path("south_river"), sequence=[(482,622)] )
             elif is_in_map(MAIN_CITY): return #ANOMALLY

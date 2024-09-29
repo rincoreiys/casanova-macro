@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from ..Helper.Macro import *
+from ..Macro import *
 # import Helper.Global as _
-from ..Helper.ErrorHandler import ActivityTimeoutException, CharacterDieException, run_thread
+from ..Core.ErrorHandler import run_thread
 @dataclass
 class Activity:
     #CHARACTER SETUP
@@ -30,13 +30,12 @@ class Activity:
     #ERROR 
     die_count:int = 0
     die_tolerance:int = 5
-
+    in_error_calibration:bool = False
     error: Exception = None
     
 
     #FUNCTION SCAFFOLDING
     def image_path(self, file): 
-        print("img path cat:", self.category)
         return f"{self.category}/{self.activity_asset_directory}/{file}"
     
     def invalid_map_handler(self):
@@ -45,39 +44,28 @@ class Activity:
                 click(677, 517)
             sleep(5)
 
-
-    def die_detector(self):      
-        while not self.done and self.running:
-            while self.die_count < self.die_tolerance and not self.done:
-                if check_image_existance(["exception/die", (503,377, 341, 237)]):
-                    self.is_inside = False
-                    click(673, 597)
-                    self.die_count += 1
-                sleep(2)
-            sleep(2)
-
+    
     def timeout_detector(self):
         duration = self.default_timeout
         while not self.done and self.running and self.timeout_detector_state:
             sleep(1)
             duration -= 1
             if duration <= 0:
-                self.error =  ActivityTimeoutException
                 self.done = False
                 self.running = False
                 self.timeout_detector_state = False
                 break
-        print("timeout_detector stopped")
+        print(f"Macro:{self.activity_asset_directory}:Timeout!!")
 
     def run_timeout_detector(self):
-         
         if self.timeout_detector_state == False: #PREVENT DUPLICATE RUNNING THREAD
-            print("timeout_detector started")
+            print(f"Macro:{self.activity_asset_directory}:Timeout Detector Started")
             self.timeout_detector_state = True
             run_thread(self.timeout_detector)
 
     def stop_timeout_detector(self):
         self.timeout_detector_state = False
+        print(f"Macro:{self.activity_asset_directory}:Timeout Detector Stopped")
 
     def settling_bag_position(self):
         while not is_bag_settled():
@@ -96,7 +84,6 @@ class Activity:
 
 
     def go_to_main_city(self):
-        # print("FROM HEREEE")
         while not is_in_map(MAIN_CITY):
             if is_in_map(self.image_path("entrance")): 
                 use_tp()
@@ -122,8 +109,6 @@ class Activity:
 
     def provide_bag_space(self): 
         #THIS FUNCTION CANT RUN IF BAG NOT SETTLED
-
-        print("cek provide_bag_space",  self.backpack_settling_attempt)
         if self.backpack_settling_attempt < 3:  self.settling_bag_position() # VALIDATION
         
         number_of_empty_space = 0
@@ -132,20 +117,16 @@ class Activity:
             time.sleep(1.5)
         
         if is_bag_settled():
-            print("bag settled")
             number_of_empty_space = check_last_page_slots()
 
             self.bag_already_empty_before = number_of_empty_space >= self.required_space
-            print("EVAL THIS", not self.bag_already_empty_before and self.backpack_settling_attempt >= 3, config.character.focus)
             if  not self.bag_already_empty_before and self.backpack_settling_attempt >= 3:    
                 if config.character.focus == "item"  : clean_bag(self.loot_focus, True)
                 elif config.character.focus == "equip" : selling_equip(False)
                 number_of_empty_space = check_last_page_slots()
 
             press("B")
-           
-            print("AVAILABLE SPACE = ", number_of_empty_space)
-     
+            print(f"Macro:{self.activity_asset_directory}:Available bag space =  {number_of_empty_space}")
             if not self.bag_already_empty_before and self.loot_focus == "equip" and  self.faction_shortcut_unlocked and not is_in_map(MAIN_CITY):
                 go_to_city_by_shortcut()
         
@@ -153,13 +134,12 @@ class Activity:
 
         self.backpack_settling_attempt = 3
    
-    def get_rid_blocking_notif(self):
-        if check_image_existance(["exception/require_party", BLOCKING_NOTIFICATION_REGION], grayscale=True) : click(675,513)
-        if check_image_existance(["exception/require_exit_party", BLOCKING_NOTIFICATION_REGION] , grayscale=True) : click(652,576)
-        if check_image_existance(["exception/require_unmount", BLOCKING_NOTIFICATION_REGION] , grayscale=True) : click(674,514)
+    # def get_rid_blocking_notif(self):
+    #     if check_image_existance(["exception/require_party", BLOCKING_NOTIFICATION_REGION], grayscale=True) : click(675,513)
+    #     if check_image_existance(["exception/require_exit_party", BLOCKING_NOTIFICATION_REGION] , grayscale=True) : click(652,576)
+    #     if check_image_existance(["exception/require_unmount", BLOCKING_NOTIFICATION_REGION] , grayscale=True) : click(674,514)
         # if check_image_existance(["exception/"]) : click()
         # if check_image_existance(["exception/"]) : click()
-
 
 
             

@@ -1,5 +1,8 @@
+from .Core import *
 from .Gameplay import *
-from .Helper.Thread import *
+
+# from .Gameplay import *
 
 
 run_screenshot_thread()
+

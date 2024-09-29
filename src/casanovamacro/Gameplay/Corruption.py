@@ -1,5 +1,5 @@
 from .Template import *
-from ..Helper.ErrorHandler import  run_thread
+from ..Core.ErrorHandler import  run_thread
 import random
 def fight_boss(): return check_image_existance(["dungeon/corruption/boss", (604, 0, 61, 50 )], grayscale=False)
 def fight_mob(): return check_image_existance(["dungeon/corruption/mob", (604, 0, 61, 50 )], confidence=.95)
@@ -16,7 +16,7 @@ class Corruption(Activity):
     claimed:bool = False
     category:str = "Dungeon" #IMPORTANT
     activity_asset_directory:str = "Corruption"
-    need_uncover_attempt = 50
+    # need_uncover_attempt = 50
     need_corruption_loot:bool = config.character.need_corruption_loot
     required_space: int = floor_limit + (5 if need_corruption_loot else 0) + 1 #1 FOR BREATHING SPACE ON BAGPACK
     die_tolerance:int = 5
@@ -24,20 +24,57 @@ class Corruption(Activity):
     
     position:str = ""
     backtick_state:bool = False
+    floor_timeout:int = 300 # 500 SECOND AROUND 5 MIN
+
+    def die_detector(self):      
+        print("Macro:Corruption:Die Detector Started")
+        while not self.done and self.running:
+            if self.is_inside:
+                if check_image_existance(["exception/die", (503,377, 341, 237)]):
+                    self.in_error_calibration = True
+                    self.is_inside = False
+                    click(673, 597)
+                    wait_map_load()
+                    sleep(2)
+                    self.is_inside = False  
+                    #CLEAR LOCK TARGET (BOSS OR MOB)
+                    press(win32con.VK_ESCAPE, mode="unicode") 
+                    press(win32con.VK_ESCAPE, mode="unicode") 
+                    self.in_error_calibration = False
+            sleep(2)
+        print("Macro:Corruption:Die Detector Closed")
+
+    def floor_timeout_detector(self):
+        while not self.done  and self.running:
+            persist_floor = self.current_floor
+            counter = 0
+            while self.current_floor == persist_floor and self.running and self.is_inside:
+                if counter >= self.floor_timeout:
+                    self.in_error_calibration = True
+                    self.first_time_claim = True
+                    self.claimed = False
+                    if is_in_middle(): afk_if_mob_exist()
+                    self.in_error_calibration = False
+                    counter = 0
+
+                sleep(1)
+                counter += 1
+            sleep(2)
+
     def read_pointer(self):
         while not self.done and self.running:
-            while not self.is_inside : sleep(1) #WILL OPERATE IF INSIDE CORRUPTION
+            while not self.is_inside  and self.running: sleep(1) #WILL OPERATE IF INSIDE CORRUPTION
             if self.current_floor > 0:
                 if is_in_end():   
                     self.position = "end"
-                    print("POINTER AT END")
+                    print("Macro:Corruption:Pointer at end")
                 elif is_in_middle():   
                     self.position = "middle"
-                    print("POINTER AT MIDDLE")
+                    print("Macro:Corruption:Pointer at middle")
 
                 elif not check_map_blank() :  
                     self.position = "start"
-                    print("POINTER AT START")
+                    print("Macro:Corruption:Pointer as start")
 
                 if is_in_end() and  fight_mob() : 
                     press(win32con.VK_ESCAPE, mode="unicode")
@@ -51,6 +88,7 @@ class Corruption(Activity):
         
     def read_floor(self):
         while not self.done  and self.running:
+
             if is_in_map("starglade") or is_in_map(self.image_path("hall")) : 
                 self.current_floor = 0  
             elif check_map_blank(): 
@@ -61,33 +99,35 @@ class Corruption(Activity):
                 for i in range(param, self.max_floor+1, 1):
                     res = is_in_map(self.image_path(f"floors/{i}"))        
                     if res:
-                        print("rf res", res, i)
+                        print(f"Macro:Corruption: Detect floor {i} is {res}, expect to be {self.current_floor}")
                         self.current_floor = i
                         break
-                    print("ccc", self.current_floor == self.max_floor, self.current_floor, self.max_floor )
+                    
+                    print(f"Macro:Corruption: Floor progress is { self.current_floor} of {self.max_floor} ")
                     sleep(0.1)
            
             self.is_inside = self.current_floor > 0
-            if self.is_inside: print("character at floor", self.current_floor)
             self.first_time_read_map = False
             sleep(4)
 
     def kill_mob(self):
         if wait_for_condition(fight_mob, timeout=3):
-            while fight_mob() and self.position == "middle": sleep(1)
+            while fight_mob() and self.position == "middle" and self.running: sleep(1)
         if wait_for_condition(fight_boss, timeout=3):
-            while fight_boss(): sleep(1)
+            while fight_boss()  and self.running: sleep(1)
 
     def kill_boss(self):
         self.backtick_state = True
         if wait_for_condition(fight_boss, timeout=2):
-            while fight_boss(): sleep(1)
+            while fight_boss()  and self.running: sleep(1)
             # wait_for_condition(fight_boss())
         #self.boss_killed = True
             
     def detect_location(self):
-        # print("dl, cf", self.position, self.current_floor)
-        print("DETECT LOCATION", self.position, " " )
+        if self.in_error_calibration: 
+            sleep(5)
+            return
+
         if not self.is_inside: 
             if is_in_map("starglade"):    
                 self.first_time_claim = True
@@ -96,17 +136,18 @@ class Corruption(Activity):
                 self.talk_to_corruption_npc()
 
         elif self.is_inside: 
-            print("FROM INSIDE, ", self.position )
+            
+            print(f"Macro:Corruption:Character is inside of instance")
             if self.position == "middle":   
                 self.backtick_state = True
                 self.kill_mob() 
             elif self.position == "end":
-                self.need_uncover_attempt -= 1
+                # self.need_uncover_attempt -= 1
                 # self.kill_boss()
                 if not self.claimed : self.claim()
                 else: self.upstair()
 
-                if self.need_uncover_attempt == 0: self.need_uncover_attempt = 50
+                # if self.need_uncover_attempt == 0: self.need_uncover_attempt = 50
                
             elif self.position == "start": 
                 self.claimed = False #SOLVE BREAKTHOURH WALL ANOMALLY
@@ -185,7 +226,7 @@ class Corruption(Activity):
 
     def enter_gate(self):
         INNER_BATTLEMASTER_NPC_DIALOG_REGION = [self.image_path("inner_battlemaster_npc_dialog"), NPC_DIALOG_REGION]
-        print(INNER_BATTLEMASTER_NPC_DIALOG_REGION)
+        
         if is_in_middle() : return
         if check_image_existance(INNER_BATTLEMASTER_NPC_DIALOG_REGION):
             click_npc_option()
@@ -197,7 +238,7 @@ class Corruption(Activity):
                     set_afk()
                 sleep(3)
         else:
-            print("talking to corruption lvl battlemaster")
+            print(f"Macro:Corruption:Talking to Battlemaster at Instance")
             talk_to_npc_by_map("battlemaster", allow_afk=True)
             sleep(1)
             
@@ -206,9 +247,13 @@ class Corruption(Activity):
         REQUIRE_KILL_ALL_EXCEPTION = ["exception/kill_all", (551, 397, 247, 168)]
         self.backtick_state = False
         if check_image_existance(CLAIM_REWARD_NPC_DIALOG_LOCATION):
-            print("#1")
+            print(f"Macro:Corruption:Claiming Reward of {self.current_floor}")
+
+            if self.current_floor == 18: 
+                self.claimed = True
+                return True #SKIP LV18 REWARD
+
             click_npc_option(1 if  self.current_floor == self.max_floor else 2 ) #TEST
-            
             sleep(0.2)
             click_npc_option()
             sleep(2)
@@ -225,20 +270,21 @@ class Corruption(Activity):
                 self.claimed = True
                 self.first_time_claim = False
                 self.position = ""
-                sleep(2)
+                wait_for_condition(lambda: self.position == "start")
                 return True
         else:
             if check_image_existance(["common/character_on_minimap", (1224,35,39,46)]) and not fight_boss():
-                print("#2")
-                if self.need_uncover_attempt == 0 and not self.first_time_claim:
-                    click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
+                print(f"Macro:Corruption:Settling position beside claim npc #2")
+                # if self.need_uncover_attempt == 0 and not self.first_time_claim:
+                #     click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
                 sleep(0.5) #GIVE SOME TIME TILL CHARACTER POINTER SETTLED PROPERLY
                 if set_map_display(False): click(475, 480)
                 sleep(0.5)
+
             elif self.first_time_claim and not fight_boss():  
-                print("#3")
+                print(f"Macro:Corruption:First time walking to corner beside claim npc #1")
                 if wait_for_condition(fight_boss, True): 
-                    while(fight_boss()): sleep(1)
+                    while(fight_boss() and self.running): sleep(1)
                 set_afk(False)
                 sleep(1) ##WAIT TILL AFK STATE CHANGED
                 if(self.walk_to_upstair_npc()):  
@@ -247,14 +293,12 @@ class Corruption(Activity):
                     set_afk()
                     sleep(0.2)
             else:
-                print("#4")
                 self.walk_to_upstair_npc() #FIX MIDDLE MOB KEEP TARGETED WHEN AFK AT END POSITION AND OTHER MINOR BUG
-                    # click(466, 385)
-                    # sleep(1.5)
 
     #UPDATED ON 22/5/24
     def walk_to_upstair_npc(self):
-        if not fight_boss(): 
+        if not self.running: return
+        if not fight_boss() : 
             result =  walk_to_map_coordinate(522, 381, allow_afk=(not self.first_time_claim), acknowledge=True) #FIX UNCOSISTENT COORDINATE WHEN CLICKING ON NPC
             sleep(1) ##FIX CHARACTER VISUAL GLITCh
             result =  walk_to_map_coordinate(522, 381, allow_afk=(not self.first_time_claim), acknowledge=True) ##FIX CHARACTER VISUAL GLITCh
@@ -264,12 +308,14 @@ class Corruption(Activity):
         
     def upstair(self):
         #TRY UPSTAIR WHEN POINTER AT END OF MAP
+        if not self.running: return
+
         CLAIM_REWARD_NPC_DIALOG_LOCATION = [self.image_path("claim_npc_dialog") , NPC_DIALOG_REGION] 
         if check_image_existance(CLAIMED_STATE):  click(527,578) #CLICK CONTINUE ON CLAIMED DIALOG, GET RID OF IT FROM BLOCKING NPC OPTION
         if check_image_existance(CLAIM_REWARD_NPC_DIALOG_LOCATION) :
-            print("ALMODD", self.current_floor , self.floor_limit)
+            print(f"Macro:Corruption:Checking  {self.current_floor} is it {self.floor_limit} (MAX) floor?")
             if self.current_floor == self.max_floor or self.current_floor  >= self.floor_limit:
-                print("ALMODD", self.current_floor , self.floor_limit)
+                print(f"Macro:Corruption:Max floor has been reached, exitting instance")
                 if self.current_floor == self.max_floor: click_npc_option(2)   
                 elif self.current_floor  >= self.floor_limit:  click_npc_option(3)
                 sleep(0.2)
@@ -284,26 +330,22 @@ class Corruption(Activity):
                 click_npc_option()
                 sleep(0.2)
                 click_npc_option()
-                # self.current_floor += 1
                 wait_for_condition(lambda: self.position == "start") 
                 self.backtick_state = True
             sleep(1)
             self.claimed = False
-            
 
         elif check_image_existance(["common/character_on_minimap", (1224,35,39,46)]) and not fight_boss():
-            if self.need_uncover_attempt == 0:
-                click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
+            # if self.need_uncover_attempt == 0:
+            #     click(698,294) #UNCOVER PIXIE FROM BLOCKING NPC
             sleep(0.5) #GIVE SOME TIME TILL CHARACTER POINTER SETTLED PROPERLY
             if set_map_display(False): click(475, 480)
             sleep(0.5)
         elif fight_mob(): 
             self.walk_to_upstair_npc() 
-            print("from upstair here")
 
     def go_to_main_city(self):
-        print("FROM HEREEE")
-        while not is_in_map(MAIN_CITY) and not self.is_inside:
+        while not is_in_map(MAIN_CITY) and not self.is_inside and self.running:
             if is_in_map("tol"):
                 if check_image_existance(["dialog/teleporter", NPC_DIALOG_REGION]):
                     click_npc_option(1)
@@ -321,6 +363,7 @@ class Corruption(Activity):
                 continue
 
     def prepare(self):
+        if not self.running: return
         set_loot_mode(item=self.need_corruption_loot, item_quality=config.character.corruption_loot_quality, radius=3)
         click(1326, 156, clicks=3) #ZOOM OUT MINI MAP
         if self.is_inside == False: self.provide_bag_space()
@@ -329,46 +372,31 @@ class Corruption(Activity):
       
     def init(self):
         self.running=True
-        print(self.floor_limit)
         run_thread(self.read_floor)
         run_thread(self.read_pointer)
         run_thread(self.die_detector)
-
+        run_thread(self.floor_timeout_detector)
+        
         wait_for_condition(lambda:  self.first_time_read_map, False, 2 )
         if not is_in_map(self.image_path("hall")) and not self.is_inside and not is_in_map(MAIN_CITY):
             if self.faction_shortcut_unlocked: go_to_city_by_shortcut()
             else: 
-                # walk_to_map_coordinate(*self.mob_safe_coordinate) CANT IMPLEMENTED YET
                 self.go_to_main_city()
         try:
-           
             #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
-            print(self.activity_asset_directory, "starting")
+            print(f"Macro:Corruption:Starting")
             self.running = True
             if self.done : return
             if not self.is_prepared :  self.prepare()
-                # self.provide_bag_space()
                     
             #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
-            while not self.done and self.running and self.die_count < self.die_tolerance:   
-                print("detect_location")
+            while not self.done and self.running:   
                 self.detect_location()
-            print(self.activity_asset_directory, "done")
+            print(f"Macro:Corruption:Done")
         
-        except CharacterDieException as de: 
-            self.die_count += 1
-            if self.die_count == self.die_tolerance: 
-                self.done = True
-                self.running = False
-            else:
-                click(678, 475)
-                sleep(2)
-                wait_map_load()
-                sleep(2)
-                self.is_inside = False  
-                press(win32con.VK_ESCAPE, mode="unicode") 
-                press(win32con.VK_ESCAPE, mode="unicode") 
-                self.init()
+        except Exception as e:
+            print(f"Error:Corruption:{e}")
+            print(f"Macro:Corruption:Closed")
         
         
 
