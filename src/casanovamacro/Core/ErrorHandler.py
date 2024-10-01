@@ -8,11 +8,6 @@ from ..Macro.Base import *
 from ..Core.Thread import run_thread
 EXCEPTION_REGION = (332,282,681,432)
 #ERROR
-LOGIN_EXCEPTIONS = [ 
-    (  "Conflict"  , ["exception/character_conflict", EXCEPTION_REGION ] ),
-    (  "RelatedOnline"  , ["exception/related_character_online",EXCEPTION_REGION ] ),
-    (  "Failed",  ["exception/login_failed", EXCEPTION_REGION ])
-]
 
 @dataclass
 class ErrorHandler:
@@ -24,7 +19,7 @@ class ErrorHandler:
         run_thread(self.detect_login_error)
 
     def handle_postlogin(self):
-        
+        from .Global import config
         self.postlogin_listener = True
         sleep(1)
         self.prelogin_listener = False #TURN OFF PRELOGIN LISTENER
@@ -39,20 +34,21 @@ class ErrorHandler:
         login_timout = 90
         err = None
         while self.prelogin_listener:
-            for type, recognition in LOGIN_EXCEPTIONS:
-                
-                res = check_image_existance(recognition)
-                if res: 
-                    err = type
-                    print(f"Event:Login:{type}")
-                    break
+            if check_image_existance(  ["exception/character_conflict", EXCEPTION_REGION ] ) or check_image_existance(["exception/related_character_online",EXCEPTION_REGION ]): 
+                err = "Conflict"
+            elif check_image_existance( ["exception/login_failed", EXCEPTION_REGION ]): 
+                err ="Failed"
+            
+            if err: 
+                print(f"Event:Login:{err}")
+                os._exit(0)
+                break
+
             sleep(1)
-
-            if err is not None: break
-
             login_timout -= 1
             if login_timout <= 0:
                 print("Event:Login:Timeout")
+                os._exit(0)
                 break
 
         print("Event:Login:Login Detector Closed")
@@ -68,8 +64,8 @@ class ErrorHandler:
             else: allowed_idle_timeout = 60
 
         print("Event:Online Detector:Closed")
-        print("Error:Disconnected")        
-
+        print("Error:Disconnected") 
+        os._exit(0)
     
     def handle_in_game_annoying_dialog(self):
         while True:

@@ -1,5 +1,7 @@
 import  importlib
 import json
+
+from ..Gameplay.Grinding.GrindingBlueprint import GrindGold
 from ..Core.API import update_character
 from ..Gameplay.Dungeons.DungeonBlueprint import Dungeon
 from ..Core.ErrorHandler import *
@@ -56,7 +58,7 @@ class Automate:
         undone = [routine for routine in config.character.routines if routine not in   config.character.done ]
         for routine in undone:
             class_ = getattr(module, routine)
-            instance:Activity | Dungeon = class_()
+            instance:Activity | Dungeon | GrindGold = class_()
             if previous_class is not None:
                 instance.backpack_settling_attempt = previous_class.backpack_settling_attempt
                 instance.bag_already_empty_before = previous_class.bag_already_empty_before
@@ -74,6 +76,9 @@ class Automate:
                         # WILL USE PREVIOUS LOOT CONFIG IF ITS SAME TO SAVE TIME
                         if previous_class.loot_config == instance.loot_focus : instance.is_prepared = True
 
+            elif type(instance) is GrindGold:
+                instance.is_in_automate_sequence = True
+                
             instance.init()
             
             if instance.done:

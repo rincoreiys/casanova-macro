@@ -116,9 +116,6 @@ def screenshot(show=False): #UPDATED
             sleep(1)
             config.screenshot_state = False
             exit(0)
-            
-        
-            # image.save(os.path.join(*casanovamacro.__path__, "Temp", f"{config.flash_hwnd}{time.time()}.png") )
         
     except Exception as ex:
         print('Image:Error: Failure is ',ex)

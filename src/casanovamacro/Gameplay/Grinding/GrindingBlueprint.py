@@ -1,4 +1,5 @@
 
+import datetime
 from ...Gameplay.Template import *
 from dataclasses import dataclass
 
@@ -15,6 +16,8 @@ class GrindGold(Activity):
     bag_already_empty_before:bool = False
     loot_focus:str= "equip"
     required_space:int = 6
+
+    is_in_automate_sequence:bool = False
 
     #GRINDING FLOW
     def teleport(self):  
@@ -49,6 +52,7 @@ class GrindGold(Activity):
         self.running = True
         run_thread(self.die_detector)
         run_thread(self.invalid_map_handler)
+        if self.is_in_automate_sequence : run_thread(self.close_gold_farmer_on_reset)
         self.activity_asset_directory = (self.__class__.__name__).replace("G", "")
         #FOR MAKESURE BAG IS EMPTY AT FIRST START OF ROUTINE
         if not self.is_prepared:  self.prepare()
@@ -57,7 +61,20 @@ class GrindGold(Activity):
         #PRIORITY, HAVE SOME SPACE BEFORE RUNNING DUNGEON
         while self.running:   
             self.detect_location()
-    
+
+    def close_gold_farmer_on_reset(self):
+        while self.running:
+            T = datetime.datetime.now().strftime('%H:%M:%S').split(":")
+            H = int(T[0])
+            M = int(T[1])
+            S = int(T[2])
+
+            if H == 11 and M == 0 and S > 3 :
+                print("Event:Automation:TurnOffGoldFarmer")
+                os._exit(0)
+
+            # print(H, M, S)
+            sleep(0.5)
 
     #MAIN FLOW
     def detect_location(self):
