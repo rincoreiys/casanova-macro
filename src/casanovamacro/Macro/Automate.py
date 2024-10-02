@@ -63,6 +63,7 @@ class Automate:
                 instance.backpack_settling_attempt = previous_class.backpack_settling_attempt
                 instance.bag_already_empty_before = previous_class.bag_already_empty_before
                 
+            print(f"Test:Instance:{instance.__dict__}, {type(instance) is GrindGold}")
             if type(instance) is Dungeon:
                 
                 # instance.done=True
@@ -76,9 +77,10 @@ class Automate:
                         # WILL USE PREVIOUS LOOT CONFIG IF ITS SAME TO SAVE TIME
                         if previous_class.loot_config == instance.loot_focus : instance.is_prepared = True
 
+                
             elif type(instance) is GrindGold:
                 instance.is_in_automate_sequence = True
-                
+              
             instance.init()
             
             if instance.done:
